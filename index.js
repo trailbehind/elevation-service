@@ -22,7 +22,6 @@ app.use(bodyParser.json({limit: process.env.MAX_POST_SIZE || '500kb'}));
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.contentType('application/json');
     next();
 });
 
@@ -30,18 +29,18 @@ app.post('/geojson', (req, res) => {
     const geojson = req.body;
 
     if (!geojson || Object.keys(geojson).length === 0) {
-        res.status(400).send('Error: invalid geojson.');
+        res.status(400).json({'Error': 'invalid geojson'});
         return;
     }
 
     addElevation(geojson, tiles, (err) => {
-        if (err) return res.status(500).send(err);
+        if (err) return res.status(500).json(err);
         res.json(geojson);
     }, noData);
 });
 
 app.get('/status', (req, res) => {
-    res.send();
+    res.json({'success': true});
 });
 
 app.listen(port, () => { console.log(`elevation-server listening on port ${port}`); });
