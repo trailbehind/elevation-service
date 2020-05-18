@@ -1,66 +1,47 @@
-var addElevation = require('geojson-elevation').addElevation,
-    TileSet = require('node-hgt').TileSet,
-    ImagicoElevationDownloader = require('node-hgt').ImagicoElevationDownloader,
-    express = require('express'),
-    bodyParser = require('body-parser'),
-    app = express(),
-    tileDirectory = process.env.TILE_DIRECTORY,
-    tiles,
-    tileDownloader,
-    noData;
+const {addElevation} = require('geojson-elevation');
+const {TileSet, ImagicoElevationDownloader} = require('node-hgt');
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+const port = process.env.PORT || 5001;
 
-if (!tileDirectory) {
-    tileDirectory = './data';
-}
+const tileDirectory = process.env.TILE_DIRECTORY || './data';
 
-if (!process.env.TILE_DOWNLOADER || process.env.TILE_DOWNLOADER === 'imagico') {
+let tileDownloader;
+if (!process.env.TILE_DOWNLOADER && process.env.TILE_DOWNLOADER === 'imagico') {
     tileDownloader = new ImagicoElevationDownloader(tileDirectory);
-} else if(process.env.TILE_DOWNLOADER === 'none') {
+} else if (process.env.TILE_DOWNLOADER === 'none') {
     tileDownloader = undefined;
 }
 
-if (process.env.NO_DATA) {
-    noData = parseInt(process.env.NO_DATA);
-}
+const tiles = new TileSet(tileDirectory, {downloader:tileDownloader});
+const noData = process.env.NO_DATA ? parseInt(process.env.NO_DATA) : undefined;
 
-tiles = new TileSet(tileDirectory, {downloader:tileDownloader});
+app.use(bodyParser.json({limit: process.env.MAX_POST_SIZE || '500kb'}));
 
-var maxPostSize = "500kb";
-if (process.env.MAX_POST_SIZE) {
-    maxPostSize = process.env.MAX_POST_SIZE;
-}
-
-app.use(bodyParser.json({limit: maxPostSize}));
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.contentType('application/json');
     next();
 });
-app.post('/geojson', function(req, res) {
-    var geojson = req.body;
+
+app.post('/geojson', (req, res) => {
+    const geojson = req.body;
 
     if (!geojson || Object.keys(geojson).length === 0) {
         res.status(400).send('Error: invalid geojson.');
         return;
     }
 
-    addElevation(geojson, tiles, function(err) {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.send(JSON.stringify(geojson));
-        }
+    addElevation(geojson, tiles, (err) => {
+        if (err) return res.status(500).send(err);
+        res.json(geojson);
     }, noData);
 });
 
-app.get('/status', function(req, res) {
+app.get('/status', (req, res) => {
     res.send();
 });
 
-var server = app.listen(5001, function() {
-    var host = server.address().address;
-    var port = server.address().port;
-
-    console.log('elevation-server listening at http://%s:%s', host, port);
-});
+app.listen(port, () => { console.log(`elevation-server listening on port ${port}`); });
