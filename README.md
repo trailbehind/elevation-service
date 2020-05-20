@@ -1,28 +1,37 @@
-elevation-service
-=================
+# elevation-service
 
-Elevation data for your GeoJSON as a micro service. Yes, really!
+https://app.codeship.com/projects/ddd3fa70-7c16-0138-df4f-2eb71819488e/status?branch=master
 
-You can try it out in [the elevation-service demo app](http://www.liedman.net/elevation-service/).
-
-You might also be interested in [geojson-elevation](https://github.com/perliedman/geojson-elevation) and 
-[node-hgt](https://github.com/perliedman/node-hgt), which this module builds upon.
+Forked from https://github.com/perliedman/elevation-service
 
 ## Installation and running
 
-Clone this repo, install dependencies:
+#### Locally
 
-```
+````bash
 npm install
-```
-
-and fire it up:
-
-```
 node index.js
-```
+````
 
-It runs on port 5001 for now.
+#### With Docker
 
-Post a GeoJSON object to its only endpoint, `/geojson`, and you will get the same object back, but its
+````bash
+docker build -t gaiagps/elevation-service .
+docker run --publish 5001:5001 -d --name elevation-service gaiagps/elevation-service:latest
+````
+
+## Usage
+
+Post a GeoJSON object to `/geojson`, and you will get the same object back, but its
 coordinates will have a third component containing elevation added.
+
+You can check the health of the server with the `/status` endpoint.
+
+
+#### Environment
+
+- `PORT`: default `5001`
+- `TILE_DIRECTORY`: default `./data`
+- `TILE_DOWNLOADER`: default `undefined`
+- `NO_DATA`: default `undefined`
+- `MAX_POST_SIZE`: default `500kb`
