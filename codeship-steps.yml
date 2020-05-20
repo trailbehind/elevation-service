@@ -5,6 +5,6 @@
       tag: ^(master|develop|staging)
       type: push
       image_name: 265147712162.dkr.ecr.us-east-1.amazonaws.com/gaiagps/elevation-service
-      image_tag: "{{ .CommitID }}"
+      image_tag: "{{ .Branch }}"
       registry: https://265147712162.dkr.ecr.us-east-1.amazonaws.com
       dockercfg_service: awsgenerator
