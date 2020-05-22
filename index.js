@@ -1,11 +1,19 @@
+const fs = require('fs');
 const {addElevation} = require('geojson-elevation');
 const {TileSet, ImagicoElevationDownloader} = require('node-hgt');
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5001;
 
 const tileDirectory = process.env.TILE_DIRECTORY || './data';
+
+const directoryExists = fs.existsSync(tileDirectory);
+if (!directoryExists) {
+    console.log(`Tile directory ${tileDirectory} does not exist`);
+    process.exit(1)
+}
 
 let tileDownloader;
 if (!process.env.TILE_DOWNLOADER && process.env.TILE_DOWNLOADER === 'imagico') {
@@ -17,6 +25,8 @@ if (!process.env.TILE_DOWNLOADER && process.env.TILE_DOWNLOADER === 'imagico') {
 const tiles = new TileSet(tileDirectory, {downloader:tileDownloader});
 const noData = process.env.NO_DATA ? parseInt(process.env.NO_DATA) : undefined;
 
+app.disable('x-powered-by');
+
 app.use(bodyParser.json({limit: process.env.MAX_POST_SIZE || '500kb'}));
 
 app.use((req, res, next) => {
@@ -24,6 +34,9 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
+
+// Enable CORS for preflight OPTIONS requests
+app.options('/geojson', cors());
 
 app.post('/geojson', (req, res) => {
     const geojson = req.body;
