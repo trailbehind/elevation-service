@@ -1,5 +1,5 @@
 const {addElevation} = require('geojson-elevation');
-const {TileSet, ImagicoElevationDownloader} = require('node-hgt');
+const GaiaTileSet = require('./GaiaTileSet');
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -7,14 +7,7 @@ const port = process.env.PORT || 5001;
 
 const tileDirectory = process.env.TILE_DIRECTORY || './data';
 
-let tileDownloader;
-if (!process.env.TILE_DOWNLOADER && process.env.TILE_DOWNLOADER === 'imagico') {
-    tileDownloader = new ImagicoElevationDownloader(tileDirectory);
-} else if (process.env.TILE_DOWNLOADER === 'none') {
-    tileDownloader = undefined;
-}
-
-const tiles = new TileSet(tileDirectory, {downloader:tileDownloader});
+const tiles = new GaiaTileSet(tileDirectory);
 const noData = process.env.NO_DATA ? parseInt(process.env.NO_DATA) : undefined;
 
 app.use(bodyParser.json({limit: process.env.MAX_POST_SIZE || '500kb'}));
