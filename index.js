@@ -19,6 +19,15 @@ const noData = process.env.NO_DATA ? parseInt(process.env.NO_DATA) : undefined;
 
 app.use(bodyParser.json({limit: process.env.MAX_POST_SIZE || '500kb'}));
 
+app.use((error, req, res, next) => {
+    if (error.type === 'entity.too.large') {
+        return res.status(413).json({'Error': 'Request payload too large'});
+    } else if (error.type === 'aborted') {
+        return res.status(400).json({'Error': 'Request aborted'});
+    }
+    next();
+})
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -34,7 +43,10 @@ app.post('/geojson', (req, res) => {
     }
 
     addElevation(geojson, tiles, (err) => {
-        if (err) return res.status(500).json(err);
+        if (err) {
+            console.log(err);
+            return res.status(500).json(err);
+        }
         res.json(geojson);
     }, noData);
 });
