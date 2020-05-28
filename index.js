@@ -1,4 +1,4 @@
-const {addElevation} = require('geojson-elevation');
+const addElevation = require('./addElevation');
 const GaiaTileSet = require('./GaiaTileSet');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -8,7 +8,6 @@ const port = process.env.PORT || 5001;
 const tileDirectory = process.env.TILE_DIRECTORY || './data';
 
 const tiles = new GaiaTileSet(tileDirectory);
-const noData = process.env.NO_DATA ? parseInt(process.env.NO_DATA) : undefined;
 
 app.use(bodyParser.json({limit: process.env.MAX_POST_SIZE || '500kb'}));
 
@@ -35,13 +34,13 @@ app.post('/geojson', (req, res) => {
         return;
     }
 
-    addElevation(geojson, tiles, (err) => {
-        if (err) {
-            console.log(err);
-            return res.status(500).json(err);
-        }
-        res.json(geojson);
-    }, noData);
+    const [error, output] = addElevation(geojson, tiles);
+    if (error) {
+        console.log(error);
+        return res.status(500).json(error);
+    }
+
+    res.json(output);
 });
 
 app.get('/status', (req, res) => {

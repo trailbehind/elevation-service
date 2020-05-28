@@ -42,14 +42,14 @@ TileSet.prototype._loadTile = function(tileDir, latLng) {
     }
 }
 
-TileSet.prototype.getElevation = function(latLng, cb) {
+TileSet.prototype.getElevation = function(latLng) {
     const ll = _latLng(latLng);
     const [error, tile] = this._loadTile(this._tileDir, ll);
 
-    if (error) return cb(error);
+    if (error) return [error];
     const elevation = tile.getElevation(ll)
-    if (isNaN(elevation)) return cb(elevation);
-    cb(undefined, elevation);
+    if (isNaN(elevation)) return [elevation];
+    return [undefined, elevation];
 };
 
 module.exports = TileSet;
