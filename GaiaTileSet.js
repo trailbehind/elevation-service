@@ -49,7 +49,7 @@ TileSet.prototype.getElevation = function(latLng) {
     if (error) return [error];
     const elevation = tile.getElevation(ll)
     if (isNaN(elevation)) return [elevation];
-    return [undefined, elevation];
+    return [undefined, elevation || 0];
 };
 
 module.exports = TileSet;
