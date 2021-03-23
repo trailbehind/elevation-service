@@ -5,7 +5,7 @@ const _latLng = require('./node_modules/node-hgt/src/latlng');
 const tileKey = require('./node_modules/node-hgt/src/tile-key');
 const Hgt = require('./node_modules/node-hgt/src/hgt');
 
-function TileSet(tileDir) {
+function TileSet(tileDir, NO_DATA = 0) {
     this._tileDir = tileDir;
     this._cache = new LRU({
         // 500mb
@@ -14,7 +14,8 @@ function TileSet(tileDir) {
         maxAge: 1000 * 60 * 60 * 12,
         length: n => n._buffer.length,
         updateAgeOnGet: true,
-    })
+    });
+    this._NO_DATA = NO_DATA;
 }
 
 TileSet.prototype.destroy = function() {};
@@ -46,10 +47,10 @@ TileSet.prototype.getElevation = function(latLng) {
     const ll = _latLng(latLng);
     const [error, tile] = this._loadTile(this._tileDir, ll);
 
-    if (error) return [error];
+    if (error) return [error, this._NO_DATA];
     const elevation = tile.getElevation(ll)
-    if (isNaN(elevation)) return [elevation];
-    return [undefined, elevation || 0];
+    if (isNaN(elevation)) return [elevation, this._NO_DATA];
+    return [undefined, elevation || this._NO_DATA];
 };
 
 module.exports = TileSet;
