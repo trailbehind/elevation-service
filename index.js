@@ -1,50 +1,57 @@
 const addElevation = require('./addElevation');
 const GaiaTileSet = require('./GaiaTileSet');
-const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
-const port = process.env.PORT || 5001;
 
-const tileDirectory = process.env.TILE_DIRECTORY || './data';
-
-const tiles = new GaiaTileSet(tileDirectory);
-
-app.use(bodyParser.json({limit: process.env.MAX_POST_SIZE || '500kb'}));
-
-app.use((error, req, res, next) => {
-    if (error.type === 'entity.too.large') {
-        return res.status(413).json({'Error': 'Request payload too large'});
-    } else if (error.type === 'aborted') {
-        return res.status(400).json({'Error': 'Request aborted'});
-    }
-    next();
-})
-
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
+const fastify = require('fastify')({
+    logger: true,
+    ignoreTrailingSlash: true,
+    disableRequestLogging: true,
+    // 500kb
+    bodyLimit: process.env.MAX_POST_SIZE || 500000,
+    connectionTimeout: 10000,
+    keepAliveTimeout: 5000,
 });
 
-app.post('/geojson', (req, res) => {
+fastify.register(require('fastify-cors', {
+    origin: '*',
+    methods: ['GET', 'OPTIONS', 'POST'],
+    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
+}))
+
+fastify.addHook('onTimeout', (request, reply, done) => {
+    reply.code(500).send({'Error': 'Request timed out'})
+})
+
+const port = process.env.PORT || 5001;
+const tileDirectory = process.env.TILE_DIRECTORY || './data';
+const tiles = new GaiaTileSet(tileDirectory);
+
+fastify.post('/geojson', (req, reply) => {
     const geojson = req.body;
 
     if (!geojson || Object.keys(geojson).length === 0) {
-        res.status(400).json({'Error': 'invalid geojson'});
+        reply.code(400).send({'Error': 'invalid geojson'});
         return;
     }
 
-    const [error, output] = addElevation(geojson, tiles);
+    const [error, output] = addElevation(geojson, tiles, req);
     if (error) {
-        console.log(error);
-        return res.status(500).json(error);
+        fastify.log.error(error)
+        return reply.code(500).send({'Error': 'Elevation unavailable'});
     }
 
-    res.json(output);
+    reply.send(output);
 });
 
-app.get('/status', (req, res) => {
-    res.json({'success': true});
+fastify.get('/status', (req, reply) => {
+    reply.send({'success': true});
 });
 
-app.listen(port, () => { console.log(`elevation-server listening on port ${port}`); });
+(async () => {
+    try {
+        await fastify.listen(port)
+        fastify.log.info(`elevation-server listening on port ${port}`)
+    } catch (error) {
+        fastify.log.error(error)
+        process.exit(1)
+    }
+})()
