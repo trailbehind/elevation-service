@@ -2,15 +2,18 @@ const fs = require('fs');
 
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 function HGT(path, swLngLat, options, callback) {
+    // Make sure the file exists
     fs.open(path, 'r', (error, fd) => {
         setImmediate(() => {
             if (error) return callback(error);
 
+            // Determine the type of HGT file based on the size of the file
             fs.fstat(fd, (error, stats) => {
                 setImmediate(() => {
                     if (error) return callback(error);
                     const {resolution, size} = getResolutionAndSize(stats.size);
 
+                    // Stream the file contents to a Buffer
                     getHGTBuffer(path, (error, buffer) => {
                         setImmediate(() => {
                             if (error) return callback(error, null);

@@ -26,6 +26,7 @@ GaiaTileSet.prototype.destroy = function() {
     this._cache.reset();
 };
 
+// Get the appropriate HGT tile for a given coordinate
 GaiaTileSet.prototype._loadTile = function(tileDir, coord, callback) {
     coord = coord.map(Math.floor);
 
@@ -47,6 +48,7 @@ GaiaTileSet.prototype._loadTile = function(tileDir, coord, callback) {
     }
 }
 
+// Given a coordinate in the format [longitude, latitude], return an elevation
 GaiaTileSet.prototype.getElevation = function(coord, callback) {
     this._loadTile(this._tileDir, coord, (error, tile) => {
         setImmediate(() => {
@@ -61,6 +63,8 @@ GaiaTileSet.prototype.getElevation = function(coord, callback) {
 
 
 GaiaTileSet.prototype.addElevation = function(geojson, callback) {
+    // Elevation lookups are async, so we need to keep track of how many coordinates
+    // have successfully been elevated and only callback once all have completed
     const coordCount = coordAll(geojson).length
     let elevated = 0;
     coordEach(geojson, coords => {
@@ -85,6 +89,10 @@ function zeroPad(v, l) {
     }
     return r;
 }
+
+// Returns a key in the format:
+//   LATITUDE DIRECTION + LATITUDE + LONGITUDE DIRECTION + LONGITUDE
+// Example: N45W130 or S01E001
 function getTileKey(coord) {
     return format('%s%s%s%s',
         coord[1] < 0 ? 'S' : 'N',
