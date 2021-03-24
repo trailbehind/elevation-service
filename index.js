@@ -1,4 +1,3 @@
-const addElevation = require('./addElevation');
 const GaiaTileSet = require('./GaiaTileSet');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -35,7 +34,7 @@ app.post('/geojson', (req, res) => {
         return;
     }
 
-    addElevation(geojson, tiles, ([, output]) => setImmediate(() => res.json(output)));
+    tiles.addElevation(geojson, ([, output]) => setImmediate(() => res.json(output)));
 });
 
 app.get('/status', (req, res) => {

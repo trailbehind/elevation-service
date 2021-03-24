@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const LRU = require('lru-cache');
 const {format} = require('util')
-
+const {coordAll, coordEach} = require('@turf/meta');
 const HGT = require('./hgt');
 const getHGTElevation = require('./hgt/getHGTElevation');
 
@@ -59,6 +59,23 @@ GaiaTileSet.prototype.getElevation = function(coord, callback) {
     })
 };
 
+
+GaiaTileSet.prototype.addElevation = function(geojson, callback) {
+    const coordCount = coordAll(geojson).length
+    let elevated = 0;
+    coordEach(geojson, coords => {
+        this.getElevation([coords[0], coords[1]], (error, elevation) => {
+            coords[2] = elevation;
+            elevated++
+
+            if (elevated === coordCount) {
+                setImmediate(() => {
+                    callback([undefined, geojson]);
+                })
+            }
+        });
+    });
+}
 
 // via https://github.com/perliedman/node-hgt/blob/master/src/tile-key.js
 function zeroPad(v, l) {
