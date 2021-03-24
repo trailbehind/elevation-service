@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const LRU = require('lru-cache');
-const _latLng = require('./hgt/latlng');
 const {format} = require('util')
 
 const HGT = require('./hgt');
@@ -27,18 +26,16 @@ GaiaTileSet.prototype.destroy = function() {
     this._cache.reset();
 };
 
-GaiaTileSet.prototype._loadTile = function(tileDir, latLng, callback) {
-    const ll = {
-        lat: Math.floor(latLng.lat),
-        lng: Math.floor(latLng.lng)
-    }
-    const key = getTileKey(ll);
+GaiaTileSet.prototype._loadTile = function(tileDir, coord, callback) {
+    coord = coord.map(Math.floor);
+
+    const key = getTileKey(coord);
     const cachedTile = this._cache.get(key);
     if (cachedTile) return callback(undefined, cachedTile);
 
     const tilePath = path.join(tileDir, key + '.hgt');
     try {
-        HGT(tilePath, ll, undefined, (error, tile) => {
+        HGT(tilePath, coord, undefined, (error, tile) => {
             setImmediate(() => {
                 if (error) return callback([{message: 'Tile does not exist'}])
                 this._cache.set(key, tile);
@@ -50,13 +47,12 @@ GaiaTileSet.prototype._loadTile = function(tileDir, latLng, callback) {
     }
 }
 
-GaiaTileSet.prototype.getElevation = function(latLng, callback) {
-    const ll = _latLng(latLng);
-    this._loadTile(this._tileDir, ll, (error, tile) => {
+GaiaTileSet.prototype.getElevation = function(coord, callback) {
+    this._loadTile(this._tileDir, coord, (error, tile) => {
         setImmediate(() => {
             if (error) return callback(error, this._NO_DATA)
 
-            const elevation = getHGTElevation(tile, ll);
+            const elevation = getHGTElevation(tile, coord);
             if (isNaN(elevation)) return callback(elevation, this._NO_DATA);
             return callback(undefined, elevation || this._NO_DATA);
         })
@@ -72,12 +68,12 @@ function zeroPad(v, l) {
     }
     return r;
 }
-function getTileKey(latLng) {
+function getTileKey(coord) {
     return format('%s%s%s%s',
-        latLng.lat < 0 ? 'S' : 'N',
-        zeroPad(Math.abs(Math.floor(latLng.lat)), 2),
-        latLng.lng < 0 ? 'W' : 'E',
-        zeroPad(Math.abs(Math.floor(latLng.lng)), 3)
+        coord[1] < 0 ? 'S' : 'N',
+        zeroPad(Math.abs(Math.floor(coord[1])), 2),
+        coord[0] < 0 ? 'W' : 'E',
+        zeroPad(Math.abs(Math.floor(coord[0])), 3)
     );
 }
 

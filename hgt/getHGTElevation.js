@@ -1,13 +1,10 @@
-const _latLng = require('./latlng');
-
 const getRowCol = (hgt, row, col) =>
     hgt.buffer.readInt16BE(((hgt.size - row - 1) * hgt.size + col) * 2);
 
-module.exports = function getHGTElevation(hgt, latLng) {
+module.exports = function getHGTElevation(hgt, coord) {
     const size = hgt.size - 1;
-    const ll = _latLng(latLng);
-    const row = (ll.lat - hgt.swLatLng.lat) * size;
-    const col = (ll.lng - hgt.swLatLng.lng) * size;
+    const row = (coord[1] - hgt.swLngLat[1]) * size;
+    const col = (coord[0] - hgt.swLngLat[0]) * size;
 
     if (row < 0 || col < 0 || row > size || col > size) {
         throw new Error(

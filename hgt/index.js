@@ -1,8 +1,7 @@
 const fs = require('fs');
-const _latLng = require('./latlng');
 
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
-function HGT(path, swLatLng, options, callback) {
+function HGT(path, swLngLat, options, callback) {
     fs.open(path, 'r', (error, fd) => {
         setImmediate(() => {
             if (error) return callback(error);
@@ -20,7 +19,7 @@ function HGT(path, swLatLng, options, callback) {
                                 resolution,
                                 size,
                                 options,
-                                swLatLng: _latLng(swLatLng),
+                                swLngLat,
                             });
                         });
                     });
