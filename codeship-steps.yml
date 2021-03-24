@@ -1,3 +1,10 @@
+- name: precommit_tests
+  type: parallel
+  steps:
+    - service: precommit-tests
+      command: "/deploy/deploy/test-pre-commit.sh"
+      exclude: staging
+
 - name: push
   type: serial
   steps:

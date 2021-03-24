@@ -24,5 +24,8 @@
     "express": "^4.12.3",
     "lru-cache": "^5.1.1",
     "node-hgt": "^1.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.2.1"
   }
 }
