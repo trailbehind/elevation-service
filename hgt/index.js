@@ -32,6 +32,7 @@ function HGT(path, swLngLat, options, callback) {
     });
 }
 
+// Via https://github.com/perliedman/node-hgt/blob/master/src/hgt.js#L16
 function getResolutionAndSize(size) {
     if (size === 12967201 * 2) {
         return {
