@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const LRU = require('lru-cache');
 const _latLng = require('./hgt/latlng');
-const tileKey = require('./node_modules/node-hgt/src/tile-key');
+const {format} = require('util')
 
 const HGT = require('./hgt');
 const getHGTElevation = require('./hgt/getHGTElevation');
@@ -28,14 +28,13 @@ GaiaTileSet.prototype.destroy = function() {
 };
 
 GaiaTileSet.prototype._loadTile = function(tileDir, latLng, callback) {
-    console.log('loadTile')
     const ll = {
         lat: Math.floor(latLng.lat),
         lng: Math.floor(latLng.lng)
     }
-    const key = tileKey(ll);
+    const key = getTileKey(ll);
     const cachedTile = this._cache.get(key);
-    if (cachedTile) return callback([undefined, cachedTile]);
+    if (cachedTile) return callback(undefined, cachedTile);
 
     const tilePath = path.join(tileDir, key + '.hgt');
     try {
@@ -47,7 +46,7 @@ GaiaTileSet.prototype._loadTile = function(tileDir, latLng, callback) {
             })
         })
     } catch(e) {
-        callback([{message: 'Unable to load tile "' + tilePath + '": ' + e, stack: e.stack}]);
+        callback({message: 'Unable to load tile "' + tilePath + '": ' + e, stack: e.stack});
     }
 }
 
@@ -64,5 +63,22 @@ GaiaTileSet.prototype.getElevation = function(latLng, callback) {
     })
 };
 
-module.exports = GaiaTileSet;
 
+// via https://github.com/perliedman/node-hgt/blob/master/src/tile-key.js
+function zeroPad(v, l) {
+    var r = v.toString();
+    while (r.length < l) {
+        r = '0' + r;
+    }
+    return r;
+}
+function getTileKey(latLng) {
+    return format('%s%s%s%s',
+        latLng.lat < 0 ? 'S' : 'N',
+        zeroPad(Math.abs(Math.floor(latLng.lat)), 2),
+        latLng.lng < 0 ? 'W' : 'E',
+        zeroPad(Math.abs(Math.floor(latLng.lng)), 3)
+    );
+}
+
+module.exports = GaiaTileSet;

@@ -10,7 +10,7 @@ function HGT(path, swLatLng, options, callback) {
             fs.fstat(fd, (error, stats) => {
                 setImmediate(() => {
                     if (error) return callback(error);
-                    const {resolution, size} = getResolutionAndSize(stats.size)
+                    const {resolution, size} = getResolutionAndSize(stats.size);
 
                     getHGTBuffer(path, (error, buffer) => {
                         setImmediate(() => {
@@ -21,9 +21,8 @@ function HGT(path, swLatLng, options, callback) {
                                 size,
                                 options,
                                 swLatLng: _latLng(swLatLng),
-                            })
-                        })
-
+                            });
+                        });
                     });
                 });
             });
@@ -36,14 +35,16 @@ function getResolutionAndSize(size) {
         return {
             resolution: 1,
             size: 3601,
-        }
+        };
     } else if (size === 1442401 * 2) {
         return {
             resolution: 3,
             size: 1201,
-        }
+        };
     } else {
-        throw new Error('Unknown tile format (1 arcsecond and 3 arcsecond supported).');
+        throw new Error(
+            'Unknown tile format (1 arcsecond and 3 arcsecond supported).'
+        );
     }
 }
 
@@ -53,7 +54,7 @@ function getHGTBuffer(fileDescriptor, callback) {
 
     let buffer = [];
     readStream
-        .on('data', chunk => buffer.push(chunk))
+        .on('data', (chunk) => buffer.push(chunk))
         .on('error', () => callback('Unable to read buffer', null))
         .on('end', () => callback(null, Buffer.concat(buffer)));
 }

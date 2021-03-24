@@ -10,13 +10,19 @@ module.exports = function getHGTElevation(hgt, latLng) {
     const col = (ll.lng - hgt.swLatLng.lng) * size;
 
     if (row < 0 || col < 0 || row > size || col > size) {
-        throw new Error('Latitude/longitude is outside tile bounds (row=' +
-            row + ', col=' + col + '; size=' + size);
+        throw new Error(
+            'Latitude/longitude is outside tile bounds (row=' +
+                row +
+                ', col=' +
+                col +
+                '; size=' +
+                size
+        );
     }
 
-    return bilinear(hgt, row, col)
+    return bilinear(hgt, row, col);
     // return hgt.options.interpolation.call(this, row, col);
-}
+};
 
 function bilinear(hgt, row, col) {
     const avg = (v1, v2, f) => v1 + (v2 - v1) * f;
