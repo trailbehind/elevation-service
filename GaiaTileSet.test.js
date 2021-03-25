@@ -22,7 +22,7 @@ describe('GaiaTileSet', () => {
         })
     })
 
-    it('loads returns an error for a tile that does not exist', () => {
+    it('returns an error for a tile that does not exist', () => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const coord = [-90, 40];
         tiles._loadTile(coord, (error, tile) => {
