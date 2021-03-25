@@ -16,8 +16,8 @@ function HGT(path, swLngLat, options, callback) {
                     // Stream the file contents to a Buffer
                     getHGTBuffer(path, (error, buffer) => {
                         setImmediate(() => {
-                            if (error) return callback(error, null);
-                            callback(null, {
+                            if (error) return callback(error);
+                            callback(undefined, {
                                 buffer,
                                 resolution,
                                 size,
