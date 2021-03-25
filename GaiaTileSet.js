@@ -10,8 +10,8 @@ function TileSet(tileDir, NO_DATA = 0) {
     this._cache = new LRU({
         // 500mb
         max: 500000000,
-        // 12 hours
-        maxAge: 1000 * 60 * 60 * 12,
+        // 30 days
+        maxAge: 1000 * 60 * 60 * 24 * 30,
         length: n => n._buffer.length,
         updateAgeOnGet: true,
     });
