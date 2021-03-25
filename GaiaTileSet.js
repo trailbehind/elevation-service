@@ -26,14 +26,14 @@ GaiaTileSet.prototype.destroy = function() {
 };
 
 // Get the appropriate HGT tile for a given coordinate
-GaiaTileSet.prototype._loadTile = function(tileDir, coord, callback) {
+GaiaTileSet.prototype._loadTile = function(coord, callback) {
     coord = coord.map(Math.floor);
 
     const key = getTileKey(coord);
     const cachedTile = this._cache.get(key);
     if (cachedTile) return callback(undefined, cachedTile);
 
-    const tilePath = path.join(tileDir, key + '.hgt');
+    const tilePath = path.join(this._tileDir, key + '.hgt');
     try {
         HGT(tilePath, coord, undefined, (error, tile) => {
             setImmediate(() => {
@@ -49,7 +49,7 @@ GaiaTileSet.prototype._loadTile = function(tileDir, coord, callback) {
 
 // Given a coordinate in the format [longitude, latitude], return an elevation
 GaiaTileSet.prototype.getElevation = function(coord, callback) {
-    this._loadTile(this._tileDir, coord, (error, tile) => {
+    this._loadTile(coord, (error, tile) => {
         setImmediate(() => {
             if (error) return callback(error, this._NO_DATA)
 
@@ -73,7 +73,7 @@ GaiaTileSet.prototype.addElevation = function(geojson, callback) {
 
             if (elevated === coordCount) {
                 setImmediate(() => {
-                    callback([undefined, geojson]);
+                    callback(undefined, geojson);
                 })
             }
         });

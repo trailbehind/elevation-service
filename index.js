@@ -34,7 +34,7 @@ app.post('/geojson', (req, res) => {
         return;
     }
 
-    tiles.addElevation(geojson, ([, output]) => setImmediate(() => res.json(output)));
+    tiles.addElevation(geojson, (error, output) => setImmediate(() => res.json(output)));
 });
 
 app.get('/status', (req, res) => {
