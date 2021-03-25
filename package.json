@@ -1,6 +1,6 @@
 {
   "name": "elevation-service",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Add elevation data to GeoJSON over HTTP",
   "homepage": "https://github.com/perliedman/elevation-service",
   "repository": {
@@ -20,8 +20,8 @@
   "license": "ISC",
   "dependencies": {
     "@turf/meta": "^6.0.2",
-    "body-parser": "^1.12.2",
-    "express": "^4.12.3",
+    "fastify": "^3.14.0",
+    "fastify-cors": "^5.2.0",
     "lru-cache": "^5.1.1",
     "node-hgt": "^1.1.0"
   }
