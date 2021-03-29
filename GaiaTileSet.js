@@ -76,12 +76,12 @@ GaiaTileSet.prototype.addElevation = function (geojson, callback) {
 };
 
 // via https://github.com/perliedman/node-hgt/blob/master/src/tile-key.js
-function zeroPad(v, l) {
-    var r = v.toString();
-    while (r.length < l) {
-        r = '0' + r;
+function zeroPad(value, len) {
+    let string = value.toString();
+    while (string.length < len) {
+        string = `0${string}`;
     }
-    return r;
+    return string;
 }
 
 // Returns a key in the format:
