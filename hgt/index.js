@@ -13,7 +13,9 @@ function HGT(path, swLngLat, options, callback) {
             fs.fstat(fd, (error, stats) => {
                 setImmediate(() => {
                     if (error) return callback(error);
-                    const [resError, resAndSize] = getResolutionAndSize(stats.size);
+                    const [resError, resAndSize] = getResolutionAndSize(
+                        stats.size
+                    );
                     if (resError) return callback(resError);
 
                     // Stream the file contents to a Buffer
@@ -38,15 +40,21 @@ function HGT(path, swLngLat, options, callback) {
 // Via https://github.com/perliedman/node-hgt/blob/master/src/hgt.js#L16
 function getResolutionAndSize(size) {
     if (size === ONE_ARC_SECOND) {
-        return [undefined, {
-            resolution: 1,
-            size: 3601,
-        }];
+        return [
+            undefined,
+            {
+                resolution: 1,
+                size: 3601,
+            },
+        ];
     } else if (size === THREE_ARC_SECOND) {
-        return [undefined, {
-            resolution: 3,
-            size: 1201,
-        }];
+        return [
+            undefined,
+            {
+                resolution: 3,
+                size: 1201,
+            },
+        ];
     } else {
         return ['Unknown tile format (1 arcsecond and 3 arcsecond supported).'];
     }
