@@ -13,7 +13,7 @@ function HGT(path, swLngLat, options, callback) {
             fs.fstat(fd, (error, stats) => {
                 setImmediate(() => {
                     if (error) return callback(error);
-                    const [resError, {resolution, size}] = getResolutionAndSize(stats.size);
+                    const [resError, resAndSize] = getResolutionAndSize(stats.size);
                     if (resError) return callback(resError);
 
                     // Stream the file contents to a Buffer
@@ -22,8 +22,8 @@ function HGT(path, swLngLat, options, callback) {
                             if (error) return callback(error);
                             callback(undefined, {
                                 buffer,
-                                resolution,
-                                size,
+                                resolution: resAndSize.resolution,
+                                size: resAndSize.size,
                                 options,
                                 swLngLat,
                             });

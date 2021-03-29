@@ -8,6 +8,13 @@ test('it returns an error if a tile does not exist', () => {
     })
 })
 
+test('it returns an error if a tile exists but is not valid', () => {
+    HGT(path.join(__dirname, '..', 'test', 'data', 'empty.hgt'), [0, 0], undefined, (error, tile) => {
+        expect(tile).toBeUndefined();
+        expect(error).not.toBeUndefined();
+    })
+})
+
 test('it returns a valid tile', () => {
     const coord = [-94, 44];
     const options = undefined;
