@@ -1,4 +1,6 @@
 const fs = require('fs');
+const THREE_ARC_SECOND = 1442401 * 2;
+const ONE_ARC_SECOND = 12967201 * 2;
 
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 function HGT(path, swLngLat, options, callback) {
@@ -11,7 +13,8 @@ function HGT(path, swLngLat, options, callback) {
             fs.fstat(fd, (error, stats) => {
                 setImmediate(() => {
                     if (error) return callback(error);
-                    const {resolution, size} = getResolutionAndSize(stats.size);
+                    const [resError, {resolution, size}] = getResolutionAndSize(stats.size);
+                    if (resError) return callback(resError);
 
                     // Stream the file contents to a Buffer
                     getHGTBuffer(path, (error, buffer) => {
@@ -34,20 +37,18 @@ function HGT(path, swLngLat, options, callback) {
 
 // Via https://github.com/perliedman/node-hgt/blob/master/src/hgt.js#L16
 function getResolutionAndSize(size) {
-    if (size === 12967201 * 2) {
-        return {
+    if (size === ONE_ARC_SECOND) {
+        return [undefined, {
             resolution: 1,
             size: 3601,
-        };
-    } else if (size === 1442401 * 2) {
-        return {
+        }];
+    } else if (size === THREE_ARC_SECOND) {
+        return [undefined, {
             resolution: 3,
             size: 1201,
-        };
+        }];
     } else {
-        throw new Error(
-            'Unknown tile format (1 arcsecond and 3 arcsecond supported).'
-        );
+        return ['Unknown tile format (1 arcsecond and 3 arcsecond supported).'];
     }
 }
 
