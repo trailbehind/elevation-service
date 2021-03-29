@@ -23,7 +23,7 @@ test('it throws an error when the coordinate is outside the tile bounds', () => 
         coord,
         options,
         (error, tile) => {
-            expect(() => getHGTElevation(tile, [-90, 40])).toThrow(Error);
+            expect(() => isNaN(getHGTElevation(tile, [-90, 40]))).toBeTruthy();
         }
     );
 });

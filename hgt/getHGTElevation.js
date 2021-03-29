@@ -5,9 +5,7 @@ module.exports = function getHGTElevation(hgt, coord) {
     const col = (coord[0] - hgt.swLngLat[0]) * size;
 
     if (row < 0 || col < 0 || row > size || col > size) {
-        throw new Error(
-            `Latitude/longitude is outside tile bounds (row=${row}, col=${col}; size=${size})`
-        );
+        return `Latitude/longitude is outside tile bounds (row=${row}, col=${col}; size=${size})`;
     }
 
     // This could be changed to nearestNeighbor or configured with options,
