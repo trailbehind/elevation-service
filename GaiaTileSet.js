@@ -1,6 +1,5 @@
 const path = require('path');
 const LRU = require('lru-cache');
-const {format} = require('util');
 const {coordAll, coordEach} = require('@turf/meta');
 const HGT = require('./hgt');
 const getHGTElevation = require('./hgt/getHGTElevation');
@@ -85,16 +84,15 @@ function zeroPad(value, len) {
 }
 
 // Returns a key in the format:
-//   LATITUDE DIRECTION + LATITUDE + LONGITUDE DIRECTION + LONGITUDE
+//   LATITUDE HEMISPHERE + LATITUDE + LONGITUDE HEMISPHERE + LONGITUDE
 // Example: N45W130 or S01E001
 function getTileKey(coord) {
-    return format(
-        '%s%s%s%s',
-        coord[1] < 0 ? 'S' : 'N',
-        zeroPad(Math.abs(Math.floor(coord[1])), 2),
-        coord[0] < 0 ? 'W' : 'E',
-        zeroPad(Math.abs(Math.floor(coord[0])), 3)
-    );
+    const latHemisphere = coord[1] < 0 ? 'S' : 'N';
+    const lat = zeroPad(Math.abs(Math.floor(coord[1])), 2);
+    const lngHemisphere = coord[0] < 0 ? 'W' : 'E';
+    const lng = zeroPad(Math.abs(Math.floor(coord[0])), 3);
+
+    return `${latHemisphere}${lat}${lngHemisphere}${lng}`;
 }
 
 module.exports = GaiaTileSet;
