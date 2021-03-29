@@ -34,20 +34,13 @@ GaiaTileSet.prototype._loadTile = function (coord, callback) {
     if (cachedTile) return callback(undefined, cachedTile);
 
     const tilePath = path.join(this._tileDir, key + '.hgt');
-    try {
-        HGT(tilePath, coord, undefined, (error, tile) => {
-            setImmediate(() => {
-                if (error) return callback([{message: 'Tile does not exist'}]);
-                this._cache.set(key, tile);
-                callback(undefined, tile);
-            });
+    HGT(tilePath, coord, undefined, (error, tile) => {
+        setImmediate(() => {
+            if (error) return callback([{message: error}]);
+            this._cache.set(key, tile);
+            callback(undefined, tile);
         });
-    } catch (e) {
-        callback({
-            message: 'Unable to load tile "' + tilePath + '": ' + e,
-            stack: e.stack,
-        });
-    }
+    });
 };
 
 // Given a coordinate in the format [longitude, latitude], return an elevation
