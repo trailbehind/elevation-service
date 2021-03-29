@@ -28,6 +28,13 @@ coordinates will have a third component containing elevation added.
 You can check the health of the server with the `/status` endpoint.
 
 
+## Testing
+
+````bash
+npm install
+npm run test
+````
+
 #### Environment
 
 - `PORT`: default `5001`

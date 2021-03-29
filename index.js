@@ -1,4 +1,3 @@
-const addElevation = require('./addElevation');
 const GaiaTileSet = require('./GaiaTileSet');
 
 const fastify = require('fastify')({
@@ -33,13 +32,14 @@ fastify.post('/geojson', (req, reply) => {
         return;
     }
 
-    const [error, output] = addElevation(geojson, tiles, req);
-    if (error) {
-        fastify.log.error(error)
-        return reply.code(500).send({'Error': 'Elevation unavailable'});
-    }
+    tiles.addElevation(geojson, (error, output) => setImmediate(() => {
+        if (error) {
+            fastify.log.error(error)
+            return reply.code(500).send({'Error': 'Elevation unavailable'});
+        }
 
-    reply.send(output);
+        reply.send(output);
+    }));
 });
 
 fastify.get('/status', (req, reply) => {
