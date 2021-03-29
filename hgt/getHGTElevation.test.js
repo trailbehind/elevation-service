@@ -15,7 +15,7 @@ test('it returns a valid elevation', () => {
     );
 });
 
-test('it throws an error when the coordinate is outside the tile bounds', () => {
+test('it returns an error when the coordinate is outside the tile bounds', () => {
     const coord = [-93.51432, 44.52342];
     const options = undefined;
     HGT(
