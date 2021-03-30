@@ -9,3 +9,9 @@ elevation-service:
         dockerfile_path: Dockerfile
     cached: true
     encrypted_env_file: aws_creds.encrypted
+
+precommit-tests:
+    image: codeship/aws-deployment
+    volumes:
+        - ./:/deploy
+        - /deploy/node_modules/

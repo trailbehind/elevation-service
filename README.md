@@ -8,17 +8,17 @@ Forked from https://github.com/perliedman/elevation-service
 
 #### Locally
 
-````bash
+```bash
 npm install
 node index.js
-````
+```
 
 #### With Docker
 
-````bash
+```bash
 docker build -t gaiagps/elevation-service .
 docker run --publish 5001:5001 -d --name elevation-service gaiagps/elevation-service:latest
-````
+```
 
 ## Usage
 
@@ -27,18 +27,17 @@ coordinates will have a third component containing elevation added.
 
 You can check the health of the server with the `/status` endpoint.
 
-
 ## Testing
 
-````bash
+```bash
 npm install
 npm run test
-````
+```
 
 #### Environment
 
-- `PORT`: default `5001`
-- `TILE_DIRECTORY`: default `./data`
-- `TILE_DOWNLOADER`: default `undefined`
-- `NO_DATA`: default `undefined`
-- `MAX_POST_SIZE`: default `500kb`
+-   `PORT`: default `5001`
+-   `TILE_DIRECTORY`: default `./data`
+-   `TILE_DOWNLOADER`: default `undefined`
+-   `NO_DATA`: default `undefined`
+-   `MAX_POST_SIZE`: default `500kb`
