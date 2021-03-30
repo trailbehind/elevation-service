@@ -1,17 +1,17 @@
 - name: precommit_tests
   type: parallel
   steps:
-    - service: precommit-tests
-      command: "/deploy/deploy/test-pre-commit.sh"
-      exclude: staging
+      - service: precommit-tests
+        command: '/deploy/deploy/test-pre-commit.sh'
+        exclude: staging
 
 - name: push
   type: serial
   steps:
-    - service: elevation-service
-      tag: ^(master|develop|staging)
-      type: push
-      image_name: 265147712162.dkr.ecr.us-east-1.amazonaws.com/gaiagps/elevation-service
-      image_tag: "{{ .Branch }}"
-      registry: https://265147712162.dkr.ecr.us-east-1.amazonaws.com
-      dockercfg_service: awsgenerator
+      - service: elevation-service
+        tag: ^(master|develop|staging)
+        type: push
+        image_name: 265147712162.dkr.ecr.us-east-1.amazonaws.com/gaiagps/elevation-service
+        image_tag: '{{ .Branch }}'
+        registry: https://265147712162.dkr.ecr.us-east-1.amazonaws.com
+        dockercfg_service: awsgenerator
