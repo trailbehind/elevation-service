@@ -44,7 +44,9 @@ GaiaTileSet.prototype._loadTile = function (coord, callback) {
         const tilePath = path.join(this._tileDir, key + '.hgt');
         HGT(tilePath, coord, undefined, (error, tile) => {
             setImmediate(() => {
-                this._cache.set(key, tile);
+                if (!error && tile) {
+                    this._cache.set(key, tile);
+                }
 
                 // Call all of the queued callbacks
                 this._tileLoadingQueue[key].forEach(cb => {
