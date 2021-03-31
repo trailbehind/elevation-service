@@ -18,6 +18,8 @@ function GaiaTileSet(tileDir, NO_DATA = 0) {
         },
     });
     this._NO_DATA = NO_DATA;
+
+    this._tileLoadingQueue = {}
 }
 
 GaiaTileSet.prototype.destroy = function () {
@@ -27,19 +29,32 @@ GaiaTileSet.prototype.destroy = function () {
 // Get the appropriate HGT tile for a given coordinate
 GaiaTileSet.prototype._loadTile = function (coord, callback) {
     coord = coord.map(Math.floor);
-
     const key = getTileKey(coord);
     const cachedTile = this._cache.get(key);
     if (cachedTile) return callback(undefined, cachedTile);
 
-    const tilePath = path.join(this._tileDir, key + '.hgt');
-    HGT(tilePath, coord, undefined, (error, tile) => {
-        setImmediate(() => {
-            if (error) return callback([{message: error}]);
-            this._cache.set(key, tile);
-            callback(undefined, tile);
+    // We don't want to make more calls to the file system than necessary, so if we are waiting
+    // for a tile to load from disk we push the callback into a queue and clear the queue once
+    // the tile is done loading.
+    if (this._tileLoadingQueue[key]) {
+        this._tileLoadingQueue[key].push(callback);
+    } else {
+        this._tileLoadingQueue[key] = [callback];
+
+        const tilePath = path.join(this._tileDir, key + '.hgt');
+        HGT(tilePath, coord, undefined, (error, tile) => {
+            setImmediate(() => {
+                this._cache.set(key, tile);
+
+                // Call all of the queued callbacks
+                this._tileLoadingQueue[key].forEach(cb => {
+                    if (error) return cb({message: error});
+                    cb(undefined, tile);
+                });
+                delete this._tileLoadingQueue[key];
+            });
         });
-    });
+    }
 };
 
 // Given a coordinate in the format [longitude, latitude], return an elevation
