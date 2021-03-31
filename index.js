@@ -48,7 +48,7 @@ fastify.get('/status', (req, reply) => {
 
 (async () => {
     try {
-        await fastify.listen(port)
+        await fastify.listen(port, '0.0.0.0')
         fastify.log.info(`elevation-server listening on port ${port}`)
     } catch (error) {
         fastify.log.error(error)
