@@ -8,6 +8,7 @@ const fastify = require('fastify')({
     bodyLimit: process.env.MAX_POST_SIZE || 500000,
     connectionTimeout: 10000,
     keepAliveTimeout: 5000,
+    exposeHeadRoutes: true,
 });
 
 fastify.register(require('fastify-cors', {
@@ -35,10 +36,10 @@ fastify.post('/geojson', (req, reply) => {
     tiles.addElevation(geojson, (error, output) => setImmediate(() => {
         if (error) {
             fastify.log.error(error)
-            return reply.code(500).send({'Error': 'Elevation unavailable'});
+            reply.code(500).send({'Error': 'Elevation unavailable'});
+        } else {
+            reply.send(output);
         }
-
-        reply.send(output);
     }));
 });
 
