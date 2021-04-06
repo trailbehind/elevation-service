@@ -56,3 +56,12 @@ fastify.get('/status', (req, reply) => {
         process.exit(1)
     }
 })()
+
+// Gracefull shut down the service
+process.on('SIGTERM', () => {
+    console.log('received SIGTERM, shutting down...');
+    fastify.close(() => {
+        console.log('fastify successfully exited');
+        process.exit(0);
+    });
+});
