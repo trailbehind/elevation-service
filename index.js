@@ -13,7 +13,7 @@ const fastify = require('fastify')({
 
 fastify.register(require('fastify-cors', {
     origin: '*',
-    methods: ['GET', 'OPTIONS', 'POST'],
+    methods: ['GET', 'HEAD', 'OPTIONS', 'POST'],
     allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
 }))
 
