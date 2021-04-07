@@ -6,8 +6,8 @@ const fastify = require('fastify')({
     disableRequestLogging: true,
     // 500kb
     bodyLimit: process.env.MAX_POST_SIZE || 500000,
-    connectionTimeout: 10000,
-    keepAliveTimeout: 5000,
+    connectionTimeout: 30000,
+    keepAliveTimeout: 20000,
     exposeHeadRoutes: true,
 });
 
