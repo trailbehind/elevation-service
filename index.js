@@ -1,15 +1,31 @@
 const GaiaTileSet = require('./GaiaTileSet');
 
+const DEFAULT_CONNECTION_TIMEOUT = 70000;
+// ELB's default keep alive is 60s, and this must be greater than that
+const DEFAULT_KEEP_ALIVE_TIMEOUT = 61000;
+
+let CONNECTION_TIMEOUT = process.env.CONNECTION_TIMEOUT || DEFAULT_CONNECTION_TIMEOUT;
+let KEEP_ALIVE_TIMEOUT = process.env.KEEP_ALIVE_TIMEOUT || DEFAULT_KEEP_ALIVE_TIMEOUT;
+
+if (KEEP_ALIVE_TIMEOUT >= CONNECTION_TIMEOUT) {
+    console.log('Ignoring KEEP_ALIVE_TIMEOUT because it exceeds the connection timeout');
+    CONNECTION_TIMEOUT = DEFAULT_CONNECTION_TIMEOUT;
+    KEEP_ALIVE_TIMEOUT = DEFAULT_KEEP_ALIVE_TIMEOUT;
+}
+
 const fastify = require('fastify')({
     logger: true,
     ignoreTrailingSlash: true,
     disableRequestLogging: true,
     // 500kb
     bodyLimit: process.env.MAX_POST_SIZE || 500000,
-    connectionTimeout: 30000,
-    keepAliveTimeout: 20000,
+    connectionTimeout: CONNECTION_TIMEOUT,
+    keepAliveTimeout: KEEP_ALIVE_TIMEOUT,
     exposeHeadRoutes: true,
 });
+
+// Add header for connection timeout to all responses
+fastify.server.headersTimeout = CONNECTION_TIMEOUT;
 
 fastify.register(require('fastify-cors', {
     origin: '*',
