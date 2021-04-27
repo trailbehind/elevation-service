@@ -32,8 +32,13 @@ fastify.post('/geojson', (req, reply) => {
         reply.code(400).send({'Error': 'invalid geojson'});
         return;
     }
-
+    const start = process.hrtime();
     tiles.addElevation(geojson, (error, output) => setImmediate(() => {
+        const end = process.hrtime(start);
+        if (end[0] > 1) {
+            console.log(`Adding elevation took ${end[0]}s ${Math.round(end[1] / 1000000)}ms`);
+            console.log(JSON.stringify(geojson))
+        }
         if (error) {
             fastify.log.error(error)
             reply.code(500).send({'Error': 'Elevation unavailable'});
