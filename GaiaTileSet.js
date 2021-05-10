@@ -41,8 +41,14 @@ GaiaTileSet.prototype._loadTile = function (coord, callback) {
     } else {
         this._tileLoadingQueue[key] = [callback];
 
+        const start = process.hrtime();
         const tilePath = path.join(this._tileDir, key + '.hgt');
         HGT(tilePath, coord, undefined, (error, tile) => {
+            const end = process.hrtime(start);
+            if (end[0] > 1) {
+                console.log(`Loading tile ${key} took ${end[0]}s ${Math.round(end[1] / 1000000)}ms`);
+            }
+
             if (!error && tile) {
                 this._cache.set(key, tile);
             }
