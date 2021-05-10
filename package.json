@@ -19,10 +19,12 @@
   "author": "Per Liedman <per@liedman.net>",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.14.0",
     "@turf/meta": "^6.0.2",
     "fastify": "^3.14.0",
     "fastify-cors": "^5.2.0",
-    "lru-cache": "^5.1.1"
+    "lru-cache": "^5.1.1",
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
     "jest": "^26.6.3"
