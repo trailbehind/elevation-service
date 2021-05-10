@@ -39,6 +39,7 @@ npm run test
 
 - `PORT`: default `5001`
 - `TILE_DIRECTORY`: default `./data`. Can also be an S3 prefix
-- `ELEVATION_BUCKET`: S3 bucket that contains elevation data
+- `AWS_ELEVATION_BUCKET`: S3 bucket that contains elevation data
+- `AWS_REGION`: Region for `ELEVATION_BUCKET`
 - `NO_DATA`: default `undefined`
 - `MAX_POST_SIZE`: default `500kb`

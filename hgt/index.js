@@ -2,12 +2,12 @@ const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
 const THREE_ARC_SECOND = 1442401 * 2;
 const ONE_ARC_SECOND = 12967201 * 2;
 
-const s3Client = new S3Client();
+const s3Client = new S3Client({region: process.env.AWS_REGION || 'us-east-1'});
 
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 function HGT(path, swLngLat, options, callback) {
     s3Client.send(new GetObjectCommand({
-        Bucket: process.env.ELEVATION_BUCKET,
+        Bucket: process.env.AWS_ELEVATION_BUCKET,
         Key: path
     })).then(async (dem) => {
         const [resError, resAndSize] = getResolutionAndSize(
