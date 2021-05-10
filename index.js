@@ -49,7 +49,7 @@ fastify.post('/geojson', (req, reply) => {
         return;
     }
     const start = process.hrtime();
-    tiles.addElevation(geojson, (error, output) => setImmediate(() => {
+    tiles.addElevation(geojson, (error, output) => () => {
         const end = process.hrtime(start);
         if (end[0] > 1) {
             console.log(`Adding elevation took ${end[0]}s ${Math.round(end[1] / 1000000)}ms`);
@@ -61,7 +61,7 @@ fastify.post('/geojson', (req, reply) => {
         } else {
             reply.send(output);
         }
-    }));
+    });
 });
 
 fastify.get('/status', (req, reply) => {

@@ -66,13 +66,11 @@ GaiaTileSet.prototype._loadTile = function (coord, callback) {
 // Given a coordinate in the format [longitude, latitude], return an elevation
 GaiaTileSet.prototype.getElevation = function (coord, callback) {
     this._loadTile(coord, (error, tile) => {
-        setImmediate(() => {
-            if (error) return callback(error, this._NO_DATA);
+        if (error) return callback(error, this._NO_DATA);
 
-            const elevation = getHGTElevation(tile, coord);
-            if (isNaN(elevation)) return callback(elevation, this._NO_DATA);
-            return callback(undefined, elevation || this._NO_DATA);
-        });
+        const elevation = getHGTElevation(tile, coord);
+        if (isNaN(elevation)) return callback(elevation, this._NO_DATA);
+        return callback(undefined, elevation || this._NO_DATA);
     });
 };
 
