@@ -1,39 +1,31 @@
-const fs = require('fs');
+const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
 const THREE_ARC_SECOND = 1442401 * 2;
 const ONE_ARC_SECOND = 12967201 * 2;
 
+const s3Client = new S3Client({region: process.env.AWS_REGION || 'us-east-1'});
+
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 function HGT(path, swLngLat, options, callback) {
-    // Make sure the file exists
-    fs.open(path, 'r', (error, fd) => {
-        setImmediate(() => {
-            if (error) return callback(error);
+    s3Client.send(new GetObjectCommand({
+        Bucket: process.env.AWS_ELEVATION_BUCKET,
+        Key: path
+    })).then(async (dem) => {
+        const [resError, resAndSize] = getResolutionAndSize(
+            dem.ContentLength
+        );
+        if (resError) return callback(resError);
 
-            // Determine the type of HGT file based on the size of the file
-            fs.fstat(fd, (error, stats) => {
-                setImmediate(() => {
-                    if (error) return callback(error);
-                    const [resError, resAndSize] = getResolutionAndSize(
-                        stats.size
-                    );
-                    if (resError) return callback(resError);
-
-                    // Stream the file contents to a Buffer
-                    getHGTBuffer(path, (error, buffer) => {
-                        setImmediate(() => {
-                            if (error) return callback(error);
-                            callback(undefined, {
-                                buffer,
-                                resolution: resAndSize.resolution,
-                                size: resAndSize.size,
-                                options,
-                                swLngLat,
-                            });
-                        });
-                    });
-                });
-            });
+        const buffer = await streamToBuffer(dem.Body);
+        return callback(undefined, {
+            buffer,
+            resolution: resAndSize.resolution,
+            size: resAndSize.size,
+            options,
+            swLngLat,
         });
+    }).catch((error) => {
+        console.log(`Error fetching tile ${path}`, error);
+        callback(`Error fetching tile ${path}`);
     });
 }
 
@@ -60,15 +52,13 @@ function getResolutionAndSize(size) {
     }
 }
 
-// Stream an HGT file into a buffer
-function getHGTBuffer(fileDescriptor, callback) {
-    const readStream = fs.createReadStream(fileDescriptor);
-
-    let buffer = [];
-    readStream
-        .on('data', (chunk) => buffer.push(chunk))
-        .on('error', () => callback('Unable to read buffer', null))
-        .on('end', () => callback(null, Buffer.concat(buffer)));
-}
+// Stream an HGT file from S3 into a buffer
+const streamToBuffer = (stream) =>
+    new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+    });
 
 module.exports = HGT;

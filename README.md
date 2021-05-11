@@ -38,7 +38,8 @@ npm run test
 #### Environment
 
 - `PORT`: default `5001`
-- `TILE_DIRECTORY`: default `./data`
-- `TILE_DOWNLOADER`: default `undefined`
+- `TILE_DIRECTORY`: default `./data`. Can also be an S3 prefix
+- `AWS_ELEVATION_BUCKET`: S3 bucket that contains elevation data
+- `AWS_REGION`: Region for `ELEVATION_BUCKET`
 - `NO_DATA`: default `undefined`
 - `MAX_POST_SIZE`: default `500kb`

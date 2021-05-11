@@ -19,6 +19,7 @@
   "author": "Per Liedman <per@liedman.net>",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.14.0",
     "@turf/meta": "^6.0.2",
     "fastify": "^3.14.0",
     "fastify-cors": "^5.2.0",

@@ -44,23 +44,21 @@ GaiaTileSet.prototype._loadTile = function (coord, callback) {
         const start = process.hrtime();
         const tilePath = path.join(this._tileDir, key + '.hgt');
         HGT(tilePath, coord, undefined, (error, tile) => {
-            setImmediate(() => {
-                const end = process.hrtime(start);
-                if (end[0] > 1) {
-                    console.log(`Loading tile ${key} took ${end[0]}s ${Math.round(end[1] / 1000000)}ms`);
-                }
+            const end = process.hrtime(start);
+            if (end[0] > 1) {
+                console.log(`Loading tile ${key} took ${end[0]}s ${Math.round(end[1] / 1000000)}ms`);
+            }
 
-                if (!error && tile) {
-                    this._cache.set(key, tile);
-                }
+            if (!error && tile) {
+                this._cache.set(key, tile);
+            }
 
-                // Call all of the queued callbacks
-                this._tileLoadingQueue[key].forEach(cb => {
-                    if (error) return cb({message: error});
-                    cb(undefined, tile);
-                });
-                delete this._tileLoadingQueue[key];
+            // Call all of the queued callbacks
+            this._tileLoadingQueue[key].forEach(cb => {
+                if (error) return cb({message: error});
+                cb(undefined, tile);
             });
+            delete this._tileLoadingQueue[key];
         });
     }
 };
@@ -68,13 +66,11 @@ GaiaTileSet.prototype._loadTile = function (coord, callback) {
 // Given a coordinate in the format [longitude, latitude], return an elevation
 GaiaTileSet.prototype.getElevation = function (coord, callback) {
     this._loadTile(coord, (error, tile) => {
-        setImmediate(() => {
-            if (error) return callback(error, this._NO_DATA);
+        if (error) return callback(error, this._NO_DATA);
 
-            const elevation = getHGTElevation(tile, coord);
-            if (isNaN(elevation)) return callback(elevation, this._NO_DATA);
-            return callback(undefined, elevation || this._NO_DATA);
-        });
+        const elevation = getHGTElevation(tile, coord);
+        if (isNaN(elevation)) return callback(elevation, this._NO_DATA);
+        return callback(undefined, elevation || this._NO_DATA);
     });
 };
 
@@ -89,9 +85,7 @@ GaiaTileSet.prototype.addElevation = function (geojson, callback) {
             elevated++;
 
             if (elevated === coordCount) {
-                setImmediate(() => {
-                    callback(undefined, geojson);
-                });
+                callback(undefined, geojson);
             }
         });
     });
