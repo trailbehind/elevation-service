@@ -15,7 +15,7 @@ function HGT(path, swLngLat, options, callback) {
         );
         if (resError) return callback(resError);
 
-        const buffer = await streamToBuffer(dem.Body)
+        const buffer = await streamToBuffer(dem.Body);
         return callback(undefined, {
             buffer,
             resolution: resAndSize.resolution,
@@ -24,8 +24,8 @@ function HGT(path, swLngLat, options, callback) {
             swLngLat,
         });
     }).catch((error) => {
-        console.log(`Error fetching tile ${path}`, error)
-        callback(`Error fetching tile ${path}`)
+        console.log(`Error fetching tile ${path}`, error);
+        callback(`Error fetching tile ${path}`);
     });
 }
 
