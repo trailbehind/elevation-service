@@ -10,7 +10,7 @@ Forked from https://github.com/perliedman/elevation-service
 
 ````bash
 npm install
-node index.js
+AWS_ELEVATION_BUCKET=com.gaiagps.dem TILE_DIRECTORY=elevation-server-data node index.js
 ````
 
 #### With Docker
