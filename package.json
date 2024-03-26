@@ -21,8 +21,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.14.0",
     "@turf/meta": "^6.0.2",
-    "fastify": "^3.14.0",
-    "fastify-cors": "^5.2.0",
+    "fastify": "^4.26.2",
+    "@fastify/cors": "^9.0.1",
     "lru-cache": "^5.1.1"
   },
   "devDependencies": {
