@@ -17,7 +17,7 @@ AWS_ELEVATION_BUCKET=com.gaiagps.dem TILE_DIRECTORY=elevation-server-data node i
 
 ````bash
 docker build -t gaiagps/elevation-service .
-docker run --publish 5001:5001 -d --name elevation-service gaiagps/elevation-service:latest
+docker run --env AWS_ELEVATION_BUCKET=com.gaiagps.dem --env TILE_DIRECTORY=elevation-server-data --volume ~/.aws:/root/.aws --publish 5001:5001 --detach --name elevation-service gaiagps/elevation-service
 ````
 
 ## Usage
