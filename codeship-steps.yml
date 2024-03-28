@@ -2,9 +2,19 @@
   type: serial
   steps:
     - service: elevation-service
-      tag: ^(master|develop|staging)
+      tag: ^(master|develop)
       type: push
       image_name: 265147712162.dkr.ecr.us-east-1.amazonaws.com/gaiagps/elevation-service
-      image_tag: "{{ .Branch }}"
+      image_tag: "{{ .CommitID }}"
+      registry: https://265147712162.dkr.ecr.us-east-1.amazonaws.com
+      dockercfg_service: awsgenerator
+- name: push-staging
+  type: serial
+  steps:
+    - service: elevation-service
+      tag: ^(staging)$
+      type: push
+      image_name: 265147712162.dkr.ecr.us-east-1.amazonaws.com/gaiagps/elevation-service
+      image_tag: "staging"
       registry: https://265147712162.dkr.ecr.us-east-1.amazonaws.com
       dockercfg_service: awsgenerator
