@@ -1,25 +1,21 @@
 const path = require('path');
-const LRU = require('lru-cache');
-const {coordAll, coordEach} = require('@turf/meta');
-const HGT = require('./hgt');
-const getHGTElevation = require('./hgt/getHGTElevation');
+const { LRUCache } = require("lru-cache");
+const { coordAll, coordEach } = require("@turf/meta");
+const HGT = require("./hgt");
+const getHGTElevation = require("./hgt/getHGTElevation");
 
 function GaiaTileSet(tileDir, NO_DATA = 0) {
     this._tileDir = tileDir;
-    this._cache = new LRU({
-        // 500mb
-        max: 500000000,
-        // 30 days
-        maxAge: 1000 * 60 * 60 * 24 * 30,
-        length: (n) => n.buffer.length,
+    const options = {
+        maxSize: 500000000, // 500 MB
+        ttl: 1000 * 60 * 60 * 24 * 30, // 30 days
+        sizeCalculation: (n) => n.buffer.length,
         updateAgeOnGet: true,
-        dispose: (key, value) => {
-            // pass
-        },
-    });
+    };
+    this._cache = new LRUCache(options);
     this._NO_DATA = NO_DATA;
 
-    this._tileLoadingQueue = {}
+    this._tileLoadingQueue = {};
 }
 
 GaiaTileSet.prototype.destroy = function () {

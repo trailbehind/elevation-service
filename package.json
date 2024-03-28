@@ -1,31 +1,18 @@
 {
-  "name": "elevation-service",
-  "version": "2.0.0",
-  "description": "Add elevation data to GeoJSON over HTTP",
-  "homepage": "https://github.com/perliedman/elevation-service",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/perliedman/elevation-service.git"
-  },
-  "main": "index.js",
-  "scripts": {
-    "test": "jest"
-  },
-  "keywords": [
-    "elevation",
-    "http",
-    "geojson"
-  ],
-  "author": "Per Liedman <per@liedman.net>",
-  "license": "ISC",
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.14.0",
-    "@turf/meta": "^6.0.2",
-    "fastify": "^4.26.2",
-    "@fastify/cors": "^9.0.1",
-    "lru-cache": "^5.1.1"
-  },
-  "devDependencies": {
-    "jest": "^26.6.3"
-  }
+    "name": "elevation-service",
+    "private": true,
+    "version": "2.0.0",
+    "scripts": {
+        "test": "jest"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.540.0",
+        "@turf/meta": "^6.5.0",
+        "fastify": "^4.26.2",
+        "@fastify/cors": "^9.0.1",
+        "lru-cache": "^10.2.0"
+    },
+    "devDependencies": {
+        "jest": "^29.7.0"
+    }
 }

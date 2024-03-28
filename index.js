@@ -77,12 +77,12 @@ fastify.post("/geojson", (req, reply) => {
 });
 
 fastify.get("/status", (_req, reply) => {
-    reply.send({ success: true });
+    reply.status(204).send();
 });
 
 (async () => {
     try {
-        await fastify.listen(port, "0.0.0.0");
+        fastify.listen({ port, host: "0.0.0.0" });
         fastify.log.info(`elevation-server listening on port ${port}`);
     } catch (error) {
         fastify.log.error(error);
