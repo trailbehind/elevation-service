@@ -26,6 +26,9 @@ jobs:
           region: us-east-1
 
       - aws-ecr/build_and_push_image:
+          auth:
+            - aws-cli/setup:
+                role_arn: arn:aws:iam::265147712162:user/gaiacloud-deploy
           region: us-east-1
           repo: gaiagps/elevation-service
           dockerfile: Dockerfile
