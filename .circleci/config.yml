@@ -7,11 +7,8 @@ orbs:
 jobs:
   build_and_push:
     docker:
-      # Specify the version you desire here
-      # See: https://circleci.com/developer/images/image/cimg/base
       - image: cimg/base:current
     steps:
-      # Checkout the code as the first step.
       - checkout
       - setup_remote_docker
       - run:
@@ -20,7 +17,6 @@ jobs:
             echo "Building Docker image using aws-ecr Orb commands."
             docker --version
 
-      # These are commands within the ECR Orb.
       - aws-ecr/ecr_login:
           region: us-east-1
 
