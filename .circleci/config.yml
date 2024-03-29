@@ -6,7 +6,6 @@ orbs:
 
 jobs:
   build_and_push:
-
     docker:
       # Specify the version you desire here
       # See: https://circleci.com/developer/images/image/cimg/base
@@ -29,7 +28,7 @@ jobs:
           region: us-east-1
           repo: gaiagps/elevation-service
           dockerfile: Dockerfile
-          tag: staging,${CIRCLE_SHA1}
+          tag: ${CIRCLE_SHA1}
 
 
 workflows:
