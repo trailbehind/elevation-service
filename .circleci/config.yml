@@ -25,14 +25,16 @@ jobs:
       - aws-ecr/ecr_login:
           region: us-east-1
 
-      - aws-ecr/build_and_push_image:
-          auth:
-            - aws-cli/setup:
-                role_arn: arn:aws:iam::265147712162:user/gaiacloud-deploy
+      - aws-ecr/build_image:
           region: us-east-1
           repo: gaiagps/elevation-service
           dockerfile: Dockerfile
-          tag: staging,${CIRCLE_SHA1}
+          tag: staging
+      - aws-ecr/push_image:
+          region: us-east-1
+          repo: gaiagps/elevation-service
+          tag: staging
+
 
 
 workflows:
