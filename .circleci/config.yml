@@ -29,12 +29,7 @@ jobs:
           region: us-east-1
           repo: gaiagps/elevation-service
           dockerfile: Dockerfile
-          tag: staging
-      - aws-ecr/push_image:
-          region: us-east-1
-          repo: gaiagps/elevation-service
-          tag: staging
-
+          tag: staging,${CIRCLE_SHA1}
 
 
 workflows:
