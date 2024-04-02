@@ -1,7 +1,7 @@
-import path from "node:path";
-import { LRUCache } from "lru-cache";
-import { coordAll, coordEach } from "@turf/meta";
-import { HGT, getHGTElevation } from "./hgt/index.js";
+import path from 'node:path';
+import {LRUCache} from 'lru-cache';
+import {coordAll, coordEach} from '@turf/meta';
+import {HGT, getHGTElevation} from './hgt/index.js';
 
 const NO_DATA = 0;
 
@@ -39,10 +39,10 @@ export class GaiaTileSet {
      * `S01E001`
      */
     static #getTileKey(coord) {
-        const latHemisphere = coord[1] < 0 ? "S" : "N";
-        const lat = `${Math.abs(Math.floor(coord[1]))}`.padStart(2, "0");
-        const lngHemisphere = coord[0] < 0 ? "W" : "E";
-        const lng = `${Math.abs(Math.floor(coord[0]))}`.padStart(3, "0");
+        const latHemisphere = coord[1] < 0 ? 'S' : 'N';
+        const lat = `${Math.abs(Math.floor(coord[1]))}`.padStart(2, '0');
+        const lngHemisphere = coord[0] < 0 ? 'W' : 'E';
+        const lng = `${Math.abs(Math.floor(coord[0]))}`.padStart(3, '0');
 
         return `${latHemisphere}${lat}${lngHemisphere}${lng}`;
     }
@@ -72,15 +72,11 @@ export class GaiaTileSet {
             this.#tileLoadingQueue[key] = [callback];
 
             const start = process.hrtime.bigint();
-            const tilePath = path.join(this.#tileDir, key + ".hgt");
+            const tilePath = path.join(this.#tileDir, key + '.hgt');
             HGT(tilePath, coord, undefined, (error, tile) => {
-                const ms = Number(
-                    (process.hrtime.bigint() - start) / 1_000_000n
-                );
+                const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
                 if (ms > 1000) {
-                    console.log(
-                        `Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`
-                    );
+                    console.log(`Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`);
                 }
 
                 if (!error && tile) {
@@ -89,7 +85,7 @@ export class GaiaTileSet {
 
                 // Call all of the queued callbacks
                 this.#tileLoadingQueue[key].forEach((cb) => {
-                    if (error) return cb({ message: error });
+                    if (error) return cb({message: error});
                     cb(undefined, tile);
                 });
                 delete this.#tileLoadingQueue[key];

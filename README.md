@@ -54,7 +54,6 @@ Then, separately start the frontend with the elevation service configured:
 LOCAL_SERVICES=elevation pnpm start:frontend
 ```
 
-
 ## Usage
 
 Post a GeoJSON object to `/geojson`, and you will get the same object back, but its
@@ -62,13 +61,12 @@ coordinates will have a third component containing elevation added.
 
 You can check the health of the server with the `/status` endpoint.
 
-
 ## Testing
 
-````bash
+```bash
 npm install
 npm run test
-````
+```
 
 #### Environment
 

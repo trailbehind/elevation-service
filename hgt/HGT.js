@@ -1,9 +1,9 @@
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import {S3Client, GetObjectCommand} from '@aws-sdk/client-s3';
 
 const THREE_ARC_SECOND = 1442401 * 2;
 const ONE_ARC_SECOND = 12967201 * 2;
 
-const s3Client = new S3Client({ region: process.env.AWS_REGION });
+const s3Client = new S3Client({region: process.env.AWS_REGION});
 
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 export function HGT(path, swLngLat, options, callback) {
@@ -12,12 +12,10 @@ export function HGT(path, swLngLat, options, callback) {
             new GetObjectCommand({
                 Bucket: process.env.AWS_ELEVATION_BUCKET,
                 Key: path,
-            })
+            }),
         )
         .then(async (dem) => {
-            const [resError, resAndSize] = getResolutionAndSize(
-                dem.ContentLength
-            );
+            const [resError, resAndSize] = getResolutionAndSize(dem.ContentLength);
             if (resError) return callback(resError);
 
             const buffer = await streamToBuffer(dem.Body);
@@ -54,7 +52,7 @@ function getResolutionAndSize(size) {
             },
         ];
     } else {
-        return ["Unknown tile format (1 arcsecond and 3 arcsecond supported)."];
+        return ['Unknown tile format (1 arcsecond and 3 arcsecond supported).'];
     }
 }
 
@@ -62,8 +60,8 @@ function getResolutionAndSize(size) {
 function streamToBuffer(stream) {
     return new Promise((resolve, reject) => {
         const chunks = [];
-        stream.on("data", (chunk) => chunks.push(chunk));
-        stream.on("error", reject);
-        stream.on("end", () => resolve(Buffer.concat(chunks)));
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('error', reject);
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
     });
 }

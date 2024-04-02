@@ -1,2 +1,2 @@
-export { HGT } from "./HGT.js";
-export { getHGTElevation } from "./getHGTElevation.js";
+export {HGT} from './HGT.js';
+export {getHGTElevation} from './getHGTElevation.js';

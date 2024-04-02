@@ -1,8 +1,8 @@
-import "dotenv/config";
+import 'dotenv/config';
 
-import { GaiaTileSet } from "./GaiaTileSet.js";
-import cors from "@fastify/cors";
-import Fastify from "fastify";
+import {GaiaTileSet} from './GaiaTileSet.js';
+import cors from '@fastify/cors';
+import Fastify from 'fastify';
 
 const port = parseInt(process.env.PORT);
 const tiles = new GaiaTileSet(process.env.TILE_DIRECTORY);
@@ -25,21 +25,21 @@ const fastify = Fastify({
 fastify.server.headersTimeout = connectionTimeout;
 
 fastify.register(cors, {
-    origin: "*",
-    methods: ["GET", "OPTIONS"],
-    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept",
+    origin: '*',
+    methods: ['GET', 'OPTIONS'],
+    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
     maxAge: 300,
 });
 
-fastify.addHook("onTimeout", (_request, reply) => {
-    reply.code(500).send({ Error: "Request timed out" });
+fastify.addHook('onTimeout', (_request, reply) => {
+    reply.code(500).send({Error: 'Request timed out'});
 });
 
-fastify.post("/geojson", (req, reply) => {
+fastify.post('/geojson', (req, reply) => {
     const geojson = req.body;
 
     if (!geojson || Object.keys(geojson).length === 0) {
-        return reply.code(400).send({ Error: "invalid geojson" });
+        return reply.code(400).send({Error: 'invalid geojson'});
     }
 
     const start = process.hrtime.bigint();
@@ -47,25 +47,23 @@ fastify.post("/geojson", (req, reply) => {
         setImmediate(() => {
             const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
             if (ms > 1_000) {
-                console.log(
-                    `Adding elevation took ${(ms / 1_000).toFixed(3)}s`
-                );
+                console.log(`Adding elevation took ${(ms / 1_000).toFixed(3)}s`);
                 console.log(JSON.stringify(geojson));
             }
             if (error) {
                 fastify.log.error(error);
-                reply.code(500).send({ Error: "Elevation unavailable" });
+                reply.code(500).send({Error: 'Elevation unavailable'});
             } else {
                 reply.send(output);
             }
-        })
+        }),
     );
 });
 
-fastify.get("/status", (_request, reply) => reply.status(204).send());
+fastify.get('/status', (_request, reply) => reply.status(204).send());
 
 try {
-    fastify.listen({ port, host: "0.0.0.0" });
+    fastify.listen({port, host: '0.0.0.0'});
     fastify.log.info(`elevation-server listening on port ${port}`);
 } catch (error) {
     fastify.log.error(error);

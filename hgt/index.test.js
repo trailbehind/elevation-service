@@ -8,24 +8,24 @@ test('it returns an error if a tile does not exist', () => {
     });
 });
 
-test("it returns an error if a tile exists but is not valid", (done) => {
+test('it returns an error if a tile exists but is not valid', (done) => {
     HGT(
-        path.join(__dirname, "..", "test", "data", "empty.hgt"),
+        path.join(__dirname, '..', 'test', 'data', 'empty.hgt'),
         [0, 0],
         undefined,
         (error, tile) => {
             expect(tile).toBeUndefined();
             expect(error).not.toBeUndefined();
             done();
-        }
+        },
     );
 });
 
-test("it returns a valid tile", (done) => {
+test('it returns a valid tile', (done) => {
     const coord = [-94, 44];
     const options = undefined;
     HGT(
-        path.join(__dirname, "..", "test", "data", "N44W094.hgt"),
+        path.join(__dirname, '..', 'test', 'data', 'N44W094.hgt'),
         coord,
         options,
         (error, tile) => {
@@ -36,6 +36,6 @@ test("it returns a valid tile", (done) => {
             expect(tile.size).toEqual(3601);
             expect(Buffer.isBuffer(tile.buffer)).toBe(true);
             done();
-        }
+        },
     );
 });

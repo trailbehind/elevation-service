@@ -1,29 +1,23 @@
-import js from "@eslint/js";
-import globals from "globals";
+import js from '@eslint/js';
+import globals from 'globals';
 
 export default [
     js.configs.recommended,
     {
         languageOptions: {
-            ecmaVersion: "latest",
-            globals: { ...globals.node },
+            ecmaVersion: 'latest',
+            globals: {...globals.node},
         },
-        linterOptions: { reportUnusedDisableDirectives: "error" },
+        linterOptions: {reportUnusedDisableDirectives: 'error'},
         rules: {
-            "no-unused-vars": [
-                "error",
-                { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
-            ],
+            'no-unused-vars': ['error', {varsIgnorePattern: '^_', argsIgnorePattern: '^_'}],
         },
     },
     {
-        files: ["**/*.test.js"],
-        languageOptions: { globals: { ...globals.jest } },
+        files: ['**/*.test.js'],
+        languageOptions: {globals: {...globals.jest}},
         rules: {
-            "no-unused-vars": [
-                "error",
-                { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
-            ],
+            'no-unused-vars': ['error', {varsIgnorePattern: '^_', argsIgnorePattern: '^_'}],
         },
     },
 ];

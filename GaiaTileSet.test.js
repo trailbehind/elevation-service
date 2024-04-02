@@ -12,7 +12,7 @@ describe('GaiaTileSet', () => {
         expect(tiles._NO_DATA).toEqual(NO_DATA);
     });
 
-    it("loads elevation tile for a tile that exists", (done) => {
+    it('loads elevation tile for a tile that exists', (done) => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const coord = [-93.51432, 44.52342];
         tiles._loadTile(coord, (error, tile) => {
@@ -23,7 +23,7 @@ describe('GaiaTileSet', () => {
         });
     });
 
-    it("returns an error for a tile that does not exist", (done) => {
+    it('returns an error for a tile that does not exist', (done) => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const coord = [-90, 40];
         tiles._loadTile(coord, (error, tile) => {
@@ -33,7 +33,7 @@ describe('GaiaTileSet', () => {
         });
     });
 
-    it("caches tiles", (done) => {
+    it('caches tiles', (done) => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const coord = [-93.51432, 44.52342];
         tiles._loadTile(coord, (_error, _tile) => {
@@ -47,7 +47,7 @@ describe('GaiaTileSet', () => {
         });
     });
 
-    it("adds elevation to a coordinate with a tile", (done) => {
+    it('adds elevation to a coordinate with a tile', (done) => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const coord = [-93.51432, 44.52342];
         tiles.getElevation(coord, (error, elevation) => {
@@ -57,7 +57,7 @@ describe('GaiaTileSet', () => {
         });
     });
 
-    it("returns the NO_DATA value when the tile for a coordinate is not present", (done) => {
+    it('returns the NO_DATA value when the tile for a coordinate is not present', (done) => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const coord = [-90, 40];
         tiles.getElevation(coord, (error, elevation) => {
@@ -67,15 +67,15 @@ describe('GaiaTileSet', () => {
         });
     });
 
-    it("adds elevation to a GeoJSON feature", (done) => {
+    it('adds elevation to a GeoJSON feature', (done) => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const feature = {
-            type: "Feature",
+            type: 'Feature',
             properties: {
-                example: "foo",
+                example: 'foo',
             },
             geometry: {
-                type: "Point",
+                type: 'Point',
                 coordinates: [-93.51432, 44.52342],
             },
         };
