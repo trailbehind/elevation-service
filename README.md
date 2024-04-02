@@ -8,17 +8,52 @@ Forked from https://github.com/perliedman/elevation-service
 
 #### Locally
 
-````bash
+1. Create a `.env` file in the project root with the following content:
+
+```env
+PORT="5001"
+TILE_DIRECTORY="elevation-server-data"
+CONNECTION_TIMEOUT="70000"
+KEEP_ALIVE_TIMEOUT="65000"
+MAX_POST_SIZE="500000"
+AWS_REGION="us-east-1"
+AWS_ELEVATION_BUCKET="com.gaiagps.dem"
+```
+
+2. Install dependencies:
+
+```bash
 npm install
-AWS_ELEVATION_BUCKET=com.gaiagps.dem TILE_DIRECTORY=elevation-server-data node index.js
-````
+```
+
+3. Start the server:
+
+```bash
+npm start
+```
 
 #### With Docker
 
-````bash
+There is no need to run the Docker image locally; GaiaCloud will work directly with the elevation service running on "bare metal" via `npm start`.
+
+But, if you insist, to use the GaiaCloud `docker-compose-services/elevation.yml` service, you will need to build the Docker image with a specific tag.
+
+```bash
 docker build -t gaiagps/elevation-service .
-docker run --env AWS_ELEVATION_BUCKET=com.gaiagps.dem --env TILE_DIRECTORY=elevation-server-data --volume ~/.aws:/root/.aws --publish 5001:5001 --detach --name elevation-service gaiagps/elevation-service
-````
+```
+
+Then, start the GaiaCloud backend with the service file:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose-services/elevation.yml up
+```
+
+Then, separately start the frontend with the elevation service configured:
+
+```bash
+LOCAL_SERVICES=elevation pnpm start:frontend
+```
+
 
 ## Usage
 
@@ -37,9 +72,4 @@ npm run test
 
 #### Environment
 
-- `PORT`: default `5001`
-- `TILE_DIRECTORY`: default `./data`. Can also be an S3 prefix
-- `AWS_ELEVATION_BUCKET`: S3 bucket that contains elevation data
-- `AWS_REGION`: Region for `ELEVATION_BUCKET`
-- `NO_DATA`: default `undefined`
-- `MAX_POST_SIZE`: default `500kb`
+See the `.env` contents above.

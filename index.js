@@ -1,28 +1,28 @@
+import "dotenv/config";
+
 import { GaiaTileSet } from "./GaiaTileSet.js";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 
-const port = process.env.PORT ?? 5001;
-const tileDirectory = process.env.TILE_DIRECTORY ?? "elevation-server-data";
-const tiles = new GaiaTileSet(tileDirectory);
-
-const CONNECTION_TIMEOUT = process.env.CONNECTION_TIMEOUT ?? 70_000;
-
-const KEEP_ALIVE_TIMEOUT = process.env.KEEP_ALIVE_TIMEOUT ?? 65_000;
+const port = parseInt(process.env.PORT);
+const tiles = new GaiaTileSet(process.env.TILE_DIRECTORY);
+const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT);
+const keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT);
+const bodyLimit = parseInt(process.env.MAX_POST_SIZE);
 
 const fastify = Fastify({
     logger: true,
     ignoreTrailingSlash: true,
     disableRequestLogging: true,
     // 500kb
-    bodyLimit: process.env.MAX_POST_SIZE || 500000,
-    connectionTimeout: CONNECTION_TIMEOUT,
-    keepAliveTimeout: KEEP_ALIVE_TIMEOUT,
+    bodyLimit,
+    connectionTimeout,
+    keepAliveTimeout,
     exposeHeadRoutes: true,
 });
 
 // Add header for connection timeout to all responses
-fastify.server.headersTimeout = CONNECTION_TIMEOUT;
+fastify.server.headersTimeout = connectionTimeout;
 
 fastify.register(cors, {
     origin: "*",
