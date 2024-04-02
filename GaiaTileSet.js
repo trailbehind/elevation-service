@@ -1,111 +1,146 @@
-const path = require('path');
+const path = require("path");
 const { LRUCache } = require("lru-cache");
 const { coordAll, coordEach } = require("@turf/meta");
 const HGT = require("./hgt");
 const getHGTElevation = require("./hgt/getHGTElevation");
 
-function GaiaTileSet(tileDir, NO_DATA = 0) {
-    this._tileDir = tileDir;
-    const options = {
-        maxSize: 500000000, // 500 MB
-        ttl: 1000 * 60 * 60 * 24 * 30, // 30 days
-        sizeCalculation: (n) => n.buffer.length,
-        updateAgeOnGet: true,
-    };
-    this._cache = new LRUCache(options);
-    this._NO_DATA = NO_DATA;
+const NO_DATA = 0;
 
-    this._tileLoadingQueue = {};
-}
+class GaiaTileSet {
+    #tileDir;
+    #cache;
+    #tileLoadingQueue;
 
-GaiaTileSet.prototype.destroy = function () {
-    this._cache.reset();
-};
+    constructor(tileDir) {
+        this.#tileDir = tileDir;
+        this.#cache = new LRUCache({
+            maxSize: 500000000, // 500 MB
+            sizeCalculation: (n) => n.buffer.length,
+            ttl: 1000 * 60 * 60 * 24 * 30, // 30 days
+            updateAgeOnGet: true,
+        });
+        this.#tileLoadingQueue = {};
+    }
 
-// Get the appropriate HGT tile for a given coordinate
-GaiaTileSet.prototype._loadTile = function (coord, callback) {
-    coord = coord.map(Math.floor);
-    const key = getTileKey(coord);
-    const cachedTile = this._cache.get(key);
-    if (cachedTile) return callback(undefined, cachedTile);
+    /**
+     * Generates a unique key for a tile based on its coordinates. The key follows the pattern:
+     * `LATITUDE HEMISPHERE + LATITUDE + LONGITUDE HEMISPHERE + LONGITUDE`
+     *
+     * @param {Array} coord - The coordinates of the tile. The first element is the longitude and
+     *   the second is the latitude.
+     * @returns {string} The unique key for the tile.
+     *
+     * @private
+     * @static
+     *
+     * @example
+     * `N45W130`
+     *
+     * @example
+     * `S01E001`
+     */
+    static #getTileKey(coord) {
+        const latHemisphere = coord[1] < 0 ? "S" : "N";
+        const lat = `${Math.abs(Math.floor(coord[1]))}`.padStart(2, "0");
+        const lngHemisphere = coord[0] < 0 ? "W" : "E";
+        const lng = `${Math.abs(Math.floor(coord[0]))}`.padStart(3, "0");
 
-    // We don't want to make more calls to the file system than necessary, so if we are waiting
-    // for a tile to load from disk we push the callback into a queue and clear the queue once
-    // the tile is done loading.
-    if (this._tileLoadingQueue[key]) {
-        this._tileLoadingQueue[key].push(callback);
-    } else {
-        this._tileLoadingQueue[key] = [callback];
+        return `${latHemisphere}${lat}${lngHemisphere}${lng}`;
+    }
 
-        const start = process.hrtime();
-        const tilePath = path.join(this._tileDir, key + '.hgt');
-        HGT(tilePath, coord, undefined, (error, tile) => {
-            const end = process.hrtime(start);
-            if (end[0] > 1) {
-                console.log(`Loading tile ${key} took ${end[0]}s ${Math.round(end[1] / 1000000)}ms`);
-            }
+    /**
+     * Loads the HGT tile for a given coordinate.
+     *
+     * @param {Array} coord - The coordinates of the tile to load.
+     * @param {Function} callback - A callback function that is called when the tile has been loaded.
+     * The first argument to the callback is an error object, which is `undefined` if no errors occurred.
+     * The second argument is the loaded tile.
+     *
+     * @private
+     */
+    #loadTile(coord, callback) {
+        coord = coord.map(Math.floor);
+        const key = GaiaTileSet.#getTileKey(coord);
+        const cachedTile = this.#cache.get(key);
+        if (cachedTile) return callback(undefined, cachedTile);
 
-            if (!error && tile) {
-                this._cache.set(key, tile);
-            }
+        // We don't want to make more calls to the file system than necessary, so if we are waiting
+        // for a tile to load from disk we push the callback into a queue and clear the queue once
+        // the tile is done loading.
+        if (this.#tileLoadingQueue[key]) {
+            this.#tileLoadingQueue[key].push(callback);
+        } else {
+            this.#tileLoadingQueue[key] = [callback];
 
-            // Call all of the queued callbacks
-            this._tileLoadingQueue[key].forEach(cb => {
-                if (error) return cb({message: error});
-                cb(undefined, tile);
+            const start = process.hrtime();
+            const tilePath = path.join(this.#tileDir, key + ".hgt");
+            HGT(tilePath, coord, undefined, (error, tile) => {
+                const end = process.hrtime(start);
+                if (end[0] > 1) {
+                    console.log(
+                        `Loading tile ${key} took ${end[0]}s ${Math.round(
+                            end[1] / 1000000
+                        )}ms`
+                    );
+                }
+
+                if (!error && tile) {
+                    this.#cache.set(key, tile);
+                }
+
+                // Call all of the queued callbacks
+                this.#tileLoadingQueue[key].forEach((cb) => {
+                    if (error) return cb({ message: error });
+                    cb(undefined, tile);
+                });
+                delete this.#tileLoadingQueue[key];
             });
-            delete this._tileLoadingQueue[key];
+        }
+    }
+
+    /**
+     * Retrieves the elevation for a given coordinate.
+     *
+     * @param {Object} coord - The coordinate object. It should have properties for latitude and
+     *   longitude.
+     * @param {Function} callback - The callback function to be invoked after the elevation is
+     *   retrieved or an error occurs. The callback should accept two parameters: an error object
+     *   and the elevation data.
+     */
+    getElevation(coord, callback) {
+        this.#loadTile(coord, (error, tile) => {
+            if (error) return callback(error, NO_DATA);
+
+            const elevation = getHGTElevation(tile, coord);
+            if (isNaN(elevation)) return callback(elevation, NO_DATA);
+            return callback(undefined, elevation || NO_DATA);
         });
     }
-};
 
-// Given a coordinate in the format [longitude, latitude], return an elevation
-GaiaTileSet.prototype.getElevation = function (coord, callback) {
-    this._loadTile(coord, (error, tile) => {
-        if (error) return callback(error, this._NO_DATA);
+    /**
+     * Adds elevation data to the coordinates of a GeoJSON object.
+     *
+     * @param {Object} geojson - The GeoJSON object to which elevation data will be added.
+     * @param {Function} callback - A callback function that is called when all elevations have been
+     *   added. The first argument to the callback is an error object, which is `undefined` if no
+     *   errors occurred. The second argument is the GeoJSON object with added elevation data.
+     */
+    addElevation(geojson, callback) {
+        // Elevation lookups are async, so we need to keep track of how many coordinates
+        // have successfully been elevated and only callback once all have completed
+        const coordCount = coordAll(geojson).length;
+        let elevated = 0;
+        coordEach(geojson, (coords) => {
+            this.getElevation([coords[0], coords[1]], (error, elevation) => {
+                coords[2] = elevation;
+                elevated++;
 
-        const elevation = getHGTElevation(tile, coord);
-        if (isNaN(elevation)) return callback(elevation, this._NO_DATA);
-        return callback(undefined, elevation || this._NO_DATA);
-    });
-};
-
-GaiaTileSet.prototype.addElevation = function (geojson, callback) {
-    // Elevation lookups are async, so we need to keep track of how many coordinates
-    // have successfully been elevated and only callback once all have completed
-    const coordCount = coordAll(geojson).length;
-    let elevated = 0;
-    coordEach(geojson, (coords) => {
-        this.getElevation([coords[0], coords[1]], (error, elevation) => {
-            coords[2] = elevation;
-            elevated++;
-
-            if (elevated === coordCount) {
-                callback(undefined, geojson);
-            }
+                if (elevated === coordCount) {
+                    callback(undefined, geojson);
+                }
+            });
         });
-    });
-};
-
-// via https://github.com/perliedman/node-hgt/blob/master/src/tile-key.js
-function zeroPad(value, len) {
-    let string = value.toString();
-    while (string.length < len) {
-        string = `0${string}`;
     }
-    return string;
-}
-
-// Returns a key in the format:
-//   LATITUDE HEMISPHERE + LATITUDE + LONGITUDE HEMISPHERE + LONGITUDE
-// Example: N45W130 or S01E001
-function getTileKey(coord) {
-    const latHemisphere = coord[1] < 0 ? 'S' : 'N';
-    const lat = zeroPad(Math.abs(Math.floor(coord[1])), 2);
-    const lngHemisphere = coord[0] < 0 ? 'W' : 'E';
-    const lng = zeroPad(Math.abs(Math.floor(coord[0])), 3);
-
-    return `${latHemisphere}${lat}${lngHemisphere}${lng}`;
 }
 
 module.exports = GaiaTileSet;

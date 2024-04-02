@@ -39,7 +39,7 @@ fastify.register(cors, {
     maxAge: 300,
 });
 
-fastify.addHook("onTimeout", (_request, reply, _done) => {
+fastify.addHook("onTimeout", (_request, reply) => {
     reply.code(500).send({ Error: "Request timed out" });
 });
 
@@ -76,16 +76,12 @@ fastify.post("/geojson", (req, reply) => {
     );
 });
 
-fastify.get("/status", (_req, reply) => {
-    reply.status(204).send();
-});
+fastify.get("/status", (_request, reply) => reply.status(204).send());
 
-(async () => {
-    try {
-        fastify.listen({ port, host: "0.0.0.0" });
-        fastify.log.info(`elevation-server listening on port ${port}`);
-    } catch (error) {
-        fastify.log.error(error);
-        process.exit(1);
-    }
-})();
+try {
+    fastify.listen({ port, host: "0.0.0.0" });
+    fastify.log.info(`elevation-server listening on port ${port}`);
+} catch (error) {
+    fastify.log.error(error);
+    process.exit(1);
+}
