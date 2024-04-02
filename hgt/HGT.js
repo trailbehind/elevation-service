@@ -12,7 +12,7 @@ export function HGT(path, swLngLat, options, callback) {
     s3Client
         .send(
             new GetObjectCommand({
-                Bucket: process.env.AWS_ELEVATION_BUCKET,
+                Bucket: process.env.AWS_ELEVATION_BUCKET ?? "com.gaiagps.dem",
                 Key: path,
             })
         )
@@ -61,10 +61,11 @@ function getResolutionAndSize(size) {
 }
 
 // Stream an HGT file from S3 into a buffer
-const streamToBuffer = (stream) =>
-    new Promise((resolve, reject) => {
+function streamToBuffer(stream) {
+    return new Promise((resolve, reject) => {
         const chunks = [];
         stream.on("data", (chunk) => chunks.push(chunk));
         stream.on("error", reject);
         stream.on("end", () => resolve(Buffer.concat(chunks)));
     });
+}

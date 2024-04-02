@@ -2,22 +2,13 @@ import { GaiaTileSet } from "./GaiaTileSet.js";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 
-const DEFAULT_CONNECTION_TIMEOUT = 70000;
-// ELB's default keep alive is 60s, and this must be greater than that
-const DEFAULT_KEEP_ALIVE_TIMEOUT = 61000;
+const port = process.env.PORT ?? 5001;
+const tileDirectory = process.env.TILE_DIRECTORY ?? "elevation-server-data";
+const tiles = new GaiaTileSet(tileDirectory);
 
-let CONNECTION_TIMEOUT =
-    process.env.CONNECTION_TIMEOUT || DEFAULT_CONNECTION_TIMEOUT;
-let KEEP_ALIVE_TIMEOUT =
-    process.env.KEEP_ALIVE_TIMEOUT || DEFAULT_KEEP_ALIVE_TIMEOUT;
+const CONNECTION_TIMEOUT = process.env.CONNECTION_TIMEOUT ?? 70_000;
 
-if (KEEP_ALIVE_TIMEOUT >= CONNECTION_TIMEOUT) {
-    console.log(
-        "Ignoring CONNECTION_TIMEOUT amd KEEP_ALIVE_TIMEOUT because KEEP_ALIVE_TIMEOUT exceeds the CONNECTION_TIMEOUT"
-    );
-    CONNECTION_TIMEOUT = DEFAULT_CONNECTION_TIMEOUT;
-    KEEP_ALIVE_TIMEOUT = DEFAULT_KEEP_ALIVE_TIMEOUT;
-}
+const KEEP_ALIVE_TIMEOUT = process.env.KEEP_ALIVE_TIMEOUT ?? 65_000;
 
 const fastify = Fastify({
     logger: true,
@@ -43,10 +34,6 @@ fastify.register(cors, {
 fastify.addHook("onTimeout", (_request, reply) => {
     reply.code(500).send({ Error: "Request timed out" });
 });
-
-const port = process.env.PORT || 5001;
-const tileDirectory = process.env.TILE_DIRECTORY || "./data";
-const tiles = new GaiaTileSet(tileDirectory);
 
 fastify.post("/geojson", (req, reply) => {
     const geojson = req.body;
