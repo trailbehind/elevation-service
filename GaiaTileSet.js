@@ -1,12 +1,11 @@
-const path = require("path");
-const { LRUCache } = require("lru-cache");
-const { coordAll, coordEach } = require("@turf/meta");
-const HGT = require("./hgt");
-const getHGTElevation = require("./hgt/getHGTElevation");
+import path from "node:path";
+import { LRUCache } from "lru-cache";
+import { coordAll, coordEach } from "@turf/meta";
+import { HGT, getHGTElevation } from "./hgt/index.js";
 
 const NO_DATA = 0;
 
-class GaiaTileSet {
+export class GaiaTileSet {
     #tileDir;
     #cache;
     #tileLoadingQueue;
@@ -142,5 +141,3 @@ class GaiaTileSet {
         });
     }
 }
-
-module.exports = GaiaTileSet;

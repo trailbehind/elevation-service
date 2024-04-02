@@ -1,5 +1,6 @@
-const GaiaTileSet = require("./GaiaTileSet");
-const cors = require("@fastify/cors");
+import { GaiaTileSet } from "./GaiaTileSet.js";
+import cors from "@fastify/cors";
+import Fastify from "fastify";
 
 const DEFAULT_CONNECTION_TIMEOUT = 70000;
 // ELB's default keep alive is 60s, and this must be greater than that
@@ -18,7 +19,7 @@ if (KEEP_ALIVE_TIMEOUT >= CONNECTION_TIMEOUT) {
     KEEP_ALIVE_TIMEOUT = DEFAULT_KEEP_ALIVE_TIMEOUT;
 }
 
-const fastify = require("fastify")({
+const fastify = Fastify({
     logger: true,
     ignoreTrailingSlash: true,
     disableRequestLogging: true,

@@ -1,4 +1,5 @@
-const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+
 const THREE_ARC_SECOND = 1442401 * 2;
 const ONE_ARC_SECOND = 12967201 * 2;
 
@@ -7,7 +8,7 @@ const s3Client = new S3Client({
 });
 
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
-function HGT(path, swLngLat, options, callback) {
+export function HGT(path, swLngLat, options, callback) {
     s3Client
         .send(
             new GetObjectCommand({
@@ -67,5 +68,3 @@ const streamToBuffer = (stream) =>
         stream.on("error", reject);
         stream.on("end", () => resolve(Buffer.concat(chunks)));
     });
-
-module.exports = HGT;

@@ -1,5 +1,5 @@
 // This file is largely derived from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
-module.exports = function getHGTElevation(hgt, coord) {
+export function getHGTElevation(hgt, coord) {
     const size = hgt.size - 1;
     const row = (coord[1] - hgt.swLngLat[1]) * size;
     const col = (coord[0] - hgt.swLngLat[0]) * size;
