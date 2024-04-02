@@ -72,15 +72,15 @@ class GaiaTileSet {
         } else {
             this.#tileLoadingQueue[key] = [callback];
 
-            const start = process.hrtime();
+            const start = process.hrtime.bigint();
             const tilePath = path.join(this.#tileDir, key + ".hgt");
             HGT(tilePath, coord, undefined, (error, tile) => {
-                const end = process.hrtime(start);
-                if (end[0] > 1) {
+                const ms = Number(
+                    (process.hrtime.bigint() - start) / 1_000_000n
+                );
+                if (ms > 1000) {
                     console.log(
-                        `Loading tile ${key} took ${end[0]}s ${Math.round(
-                            end[1] / 1000000
-                        )}ms`
+                        `Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`
                     );
                 }
 

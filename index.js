@@ -51,18 +51,16 @@ fastify.post("/geojson", (req, reply) => {
     const geojson = req.body;
 
     if (!geojson || Object.keys(geojson).length === 0) {
-        reply.code(400).send({ Error: "invalid geojson" });
-        return;
+        return reply.code(400).send({ Error: "invalid geojson" });
     }
-    const start = process.hrtime();
+
+    const start = process.hrtime.bigint();
     tiles.addElevation(geojson, (error, output) =>
         setImmediate(() => {
-            const end = process.hrtime(start);
-            if (end[0] > 1) {
+            const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
+            if (ms > 1_000) {
                 console.log(
-                    `Adding elevation took ${end[0]}s ${Math.round(
-                        end[1] / 1000000
-                    )}ms`
+                    `Adding elevation took ${(ms / 1_000).toFixed(3)}s`
                 );
                 console.log(JSON.stringify(geojson));
             }
