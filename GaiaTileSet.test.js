@@ -36,11 +36,11 @@ describe('GaiaTileSet', () => {
     it("caches tiles", (done) => {
         const tiles = new GaiaTileSet(TEST_DATA_DIR, NO_DATA);
         const coord = [-93.51432, 44.52342];
-        tiles._loadTile(coord, (error, tile) => {
+        tiles._loadTile(coord, (_error, _tile) => {
             expect(tiles._cache.keys().length).toEqual(1);
 
             // It doesn't add another tile to the cache
-            tiles._loadTile(coord, (error, tile) => {
+            tiles._loadTile(coord, (_error, _tile) => {
                 expect(tiles._cache.keys().length).toEqual(1);
                 done();
             });

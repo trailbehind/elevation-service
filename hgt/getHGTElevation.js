@@ -11,7 +11,7 @@ export function getHGTElevation(hgt, coord) {
     // This could be changed to nearestNeighbor or configured with options,
     // for example return hgt.options.interpolation.call(this, row, col);
     return bilinear(hgt, row, col);
-};
+}
 
 const getRowCol = (hgt, row, col) =>
     hgt.buffer.readInt16BE(((hgt.size - row - 1) * hgt.size + col) * 2);
@@ -35,6 +35,6 @@ function bilinear(hgt, row, col) {
     return avg(v1, v2, rowFrac);
 }
 
-function nearestNeighbour(hgt, row, col) {
+function _nearestNeighbour(hgt, row, col) {
     return getRowCol(hgt, Math.round(row), Math.round(col));
 }
