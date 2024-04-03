@@ -3,3 +3,4 @@ data/*
 *.aes
 .DS_Store
 .env
+dist/
