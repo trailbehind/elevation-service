@@ -8,5 +8,9 @@
         "outDir": "dist",
         "strict": true
     },
+    "watchOptions": {
+        "excludeDirectories": ["dist", "node_modules", "test"],
+        "excludeFiles": ["**/*.test.ts"]
+    },
     "include": ["src/**/*"]
 }
