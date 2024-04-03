@@ -1,13 +1,15 @@
 FROM node:lts
 
-WORKDIR /usr/src/elevation-service
+WORKDIR /srv
 
-COPY ./package*.json ./
+COPY package.json package-lock.json ./
 
 RUN npm install -g pm2
 RUN npm install
 
-COPY ./. .
+COPY src src
+COPY tsconfig.json ./
+RUN npm run build
 
 EXPOSE 5001
-CMD ["pm2-runtime", "index.js"]
+CMD ["pm2-runtime", "npm start"]

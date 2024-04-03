@@ -4,11 +4,11 @@ import {GaiaTileSet} from './GaiaTileSet/index.js';
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
 
-const port = parseInt(process.env.PORT);
-const tiles = new GaiaTileSet(process.env.TILE_DIRECTORY);
-const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT);
-const keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT);
-const bodyLimit = parseInt(process.env.MAX_POST_SIZE);
+const port = parseInt(process.env.PORT!);
+const tiles = new GaiaTileSet(process.env.TILE_DIRECTORY!);
+const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
+const keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT!);
+const bodyLimit = parseInt(process.env.MAX_POST_SIZE!);
 
 const fastify = Fastify({
     logger: true,
@@ -43,7 +43,7 @@ fastify.post('/geojson', (req, reply) => {
     }
 
     const start = process.hrtime.bigint();
-    tiles.addElevation(geojson, (error, output) =>
+    tiles.addElevation(geojson, (error: any, output: any) =>
         setImmediate(() => {
             const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
             if (ms > 1_000) {

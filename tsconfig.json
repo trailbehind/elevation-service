@@ -5,7 +5,8 @@
         "target": "ESNext",
         "moduleResolution": "NodeNext",
         "allowJs": true,
-        "outDir": "dist"
+        "outDir": "dist",
+        "strict": true
     },
     "include": ["src/**/*"]
 }
