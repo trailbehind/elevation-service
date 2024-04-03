@@ -4,7 +4,7 @@
     "private": true,
     "version": "2.0.0",
     "scripts": {
-        "start": "node index.js",
+        "start": "node src/index.js",
         "test": "jest"
     },
     "dependencies": {
