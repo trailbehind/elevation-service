@@ -1,7 +1,7 @@
 import path from 'node:path';
 import {LRUCache} from 'lru-cache';
 import {coordAll, coordEach} from '@turf/meta';
-import {HGT, getHGTElevation} from './hgt/index.js';
+import {HGT, getHGTElevation} from '../HGT/index.js';
 
 const NO_DATA = 0;
 

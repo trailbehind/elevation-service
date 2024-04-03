@@ -1,6 +1,6 @@
 import 'dotenv/config';
 
-import {GaiaTileSet} from './GaiaTileSet.js';
+import {GaiaTileSet} from './GaiaTileSet/index.js';
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
 
