@@ -1,11 +1,14 @@
+import {HGTData} from './types.js';
+import type {Position} from 'geojson';
+
 // This file is largely derived from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
-export function getHGTElevation(hgt, coord) {
+export function getHGTElevation(hgt: HGTData, coord: Position) {
     const size = hgt.size - 1;
     const row = (coord[1] - hgt.swLngLat[1]) * size;
     const col = (coord[0] - hgt.swLngLat[0]) * size;
 
     if (row < 0 || col < 0 || row > size || col > size) {
-        return `Latitude/longitude is outside tile bounds (row=${row}, col=${col}; size=${size})`;
+        throw `Latitude/longitude is outside tile bounds (row=${row}, col=${col}; size=${size})`;
     }
 
     // This could be changed to nearestNeighbor or configured with options,
@@ -13,12 +16,7 @@ export function getHGTElevation(hgt, coord) {
     return bilinear(hgt, row, col);
 }
 
-const getRowCol = (hgt, row, col) =>
-    hgt.buffer.readInt16BE(((hgt.size - row - 1) * hgt.size + col) * 2);
-
-const avg = (v1, v2, f) => v1 + (v2 - v1) * f;
-
-function bilinear(hgt, row, col) {
+function bilinear(hgt: HGTData, row: number, col: number) {
     const rowLow = Math.floor(row);
     const rowHi = rowLow + 1;
     const rowFrac = row - rowLow;
@@ -35,6 +33,14 @@ function bilinear(hgt, row, col) {
     return avg(v1, v2, rowFrac);
 }
 
-function _nearestNeighbour(hgt, row, col) {
+function avg(v1: number, v2: number, f: number) {
+    return v1 + (v2 - v1) * f;
+}
+
+function _nearestNeighbour(hgt: HGTData, row: number, col: number) {
     return getRowCol(hgt, Math.round(row), Math.round(col));
+}
+
+function getRowCol(hgt: HGTData, row: number, col: number) {
+    return hgt.buffer.readInt16BE(((hgt.size - row - 1) * hgt.size + col) * 2);
 }
