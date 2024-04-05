@@ -19,7 +19,6 @@ const fastify = Fastify({
     bodyLimit,
     connectionTimeout,
     keepAliveTimeout,
-    exposeHeadRoutes: true,
 });
 
 // Add header for connection timeout to all responses
