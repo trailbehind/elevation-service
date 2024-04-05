@@ -5,7 +5,7 @@ import {HGT, HGTData, getHGTElevation} from '../HGT/index.js';
 import {Feature, FeatureCollection, Geometry, Position} from 'geojson';
 
 type LoadTileCallback = (error: unknown, tile?: HGTData) => void;
-type GetElevationCallback = (error: unknown, elevation: number | typeof NO_DATA) => void;
+type GetElevationCallback = (elevation: number | typeof NO_DATA) => void;
 type TileKey = `${'N' | 'S'}${string}${'E' | 'W'}${string}`;
 
 export const NO_DATA = Symbol();
@@ -37,12 +37,11 @@ export class GaiaTileSet {
      * @example
      * `S01E001`
      */
-    static #getTileKey(coord: Position): TileKey {
-        const truncatedCoord = coord.map((n) => Math.floor(n));
-        const latHemisphere = truncatedCoord[1] < 0 ? 'S' : 'N';
-        const lat = `${Math.abs(truncatedCoord[1])}`.padStart(2, '0');
-        const lngHemisphere = truncatedCoord[0] < 0 ? 'W' : 'E';
-        const lng = `${Math.abs(truncatedCoord[0])}`.padStart(3, '0');
+    static #getTileKey(lngDegrees: number, latDegrees: number): TileKey {
+        const latHemisphere = latDegrees < 0 ? 'S' : 'N';
+        const lat = `${Math.abs(latDegrees)}`.padStart(2, '0');
+        const lngHemisphere = lngDegrees < 0 ? 'W' : 'E';
+        const lng = `${Math.abs(Math.floor(lngDegrees))}`.padStart(3, '0');
 
         return `${latHemisphere}${lat}${lngHemisphere}${lng}`;
     }
@@ -56,7 +55,9 @@ export class GaiaTileSet {
      * @private
      */
     #loadTile(coord: Position, callback: LoadTileCallback) {
-        const key = GaiaTileSet.#getTileKey(coord);
+        const [lngDegrees, latDegrees] = coord.map((n) => Math.floor(n));
+
+        const key = GaiaTileSet.#getTileKey(lngDegrees, latDegrees);
 
         if (this.#cache.has(key)) return callback(undefined, this.#cache.get(key));
 
@@ -69,7 +70,7 @@ export class GaiaTileSet {
 
         const start = process.hrtime.bigint();
 
-        HGT(path.join(this.#tileDir, key + '.hgt'), coord, (error, tile) => {
+        HGT(path.join(this.#tileDir, key + '.hgt'), [lngDegrees, latDegrees], (error, tile) => {
             const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
 
             if (ms > 1000) console.log(`Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`);
@@ -77,9 +78,7 @@ export class GaiaTileSet {
             if (!error) this.#cache.set(key, tile);
 
             // Call all of the queued callbacks
-            this.#tileLoadingQueue[key].forEach((cb) =>
-                error ? cb({message: error}) : cb(undefined, tile),
-            );
+            this.#tileLoadingQueue[key].forEach((cb) => (error ? cb(error) : cb(undefined, tile)));
 
             delete this.#tileLoadingQueue[key];
         });
@@ -90,13 +89,13 @@ export class GaiaTileSet {
      */
     getElevation(coord: Position, callback: GetElevationCallback) {
         this.#loadTile(coord, (error, tile) => {
-            if (error) return callback(error, NO_DATA);
+            if (error) return callback(NO_DATA);
 
             try {
                 const elevation = getHGTElevation(tile!, coord);
-                return callback(undefined, elevation);
+                return callback(elevation);
             } catch (error) {
-                return callback(error, NO_DATA);
+                return callback(NO_DATA);
             }
         });
     }
@@ -113,15 +112,13 @@ export class GaiaTileSet {
         const coordCount = coordAll(geojson).length;
         let elevated = 0;
         coordEach(geojson, (coord) => {
-            this.getElevation([coord[0], coord[1]], (_error, elevation) => {
+            this.getElevation([coord[0], coord[1]], (elevation) => {
                 coord[2] = elevation === NO_DATA ? 0 : elevation;
 
                 elevated++;
 
                 if (elevated === coordCount) {
                     callback(undefined, geojson);
-                } else {
-                    callback('Elevation unavailable');
                 }
             });
         });
