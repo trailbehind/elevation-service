@@ -75,7 +75,7 @@ fastify.post('/geojson', async (req, reply) => {
     }
 });
 
-fastify.get('/status', (_request, reply) => reply.status(204).send());
+fastify.get('/status', async (_request, reply) => reply.status(204).send());
 
 try {
     await fastify.listen({port, host: '0.0.0.0'});
