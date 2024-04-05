@@ -26,13 +26,22 @@ const fastify = Fastify({
 fastify.server.headersTimeout = connectionTimeout;
 
 await fastify.register(cors, {
-    origin: '*',
+    origin: (origin, cb) => {
+        switch (origin) {
+            case 'http://localhost:8000':
+            case 'https://www.gaiagps.com':
+            case 'https://www-staging.gaiagps.com':
+                return cb(null, origin);
+            default:
+                return cb(new Error('Not allowed'), []);
+        }
+    },
     methods: ['GET', 'OPTIONS'],
-    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept',
+    allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
     maxAge: 300,
 });
 
-fastify.addHook('onTimeout', async (request, reply) => {
+fastify.addHook('onTimeout', async (_request, reply) => {
     await reply.code(500).send({Error: 'Request timed out'});
 });
 
