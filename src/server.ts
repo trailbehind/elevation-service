@@ -51,8 +51,6 @@ fastify.post('/geojson', async (req, reply) => {
         return reply.code(400).send({Error: 'invalid geojson'});
     }
 
-    const start = process.hrtime.bigint();
-
     try {
         const output = await new Promise<typeof geojson>((resolve, reject) => {
             tiles.addElevation(geojson, (error, output) =>
@@ -64,12 +62,6 @@ fastify.post('/geojson', async (req, reply) => {
     } catch (error) {
         fastify.log.error(error);
         await reply.code(500).send({Error: 'Elevation unavailable'});
-    }
-
-    const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
-    if (ms > 1_000) {
-        console.log(`Adding elevation took ${(ms / 1_000).toFixed(3)}s`);
-        console.log(JSON.stringify(geojson));
     }
 });
 
