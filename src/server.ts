@@ -55,10 +55,9 @@ fastify.post('/geojson', async (req, reply) => {
 
     try {
         const output = await new Promise<typeof geojson>((resolve, reject) => {
-            tiles.addElevation(geojson, (error, output) => {
-                if (error) reject(error);
-                else resolve(output!);
-            });
+            tiles.addElevation(geojson, (error, output) =>
+                error ? reject(error) : resolve(output!),
+            );
         });
 
         await reply.send(output);

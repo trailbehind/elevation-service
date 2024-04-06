@@ -6,6 +6,8 @@ import {Position} from 'geojson';
 const THREE_ARC_SECOND = 1442401 * 2;
 const ONE_ARC_SECOND = 12967201 * 2;
 
+const missingTiles = new Set<string>();
+
 const s3Client = new S3Client({region: process.env.AWS_REGION});
 
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
@@ -15,13 +17,14 @@ export function HGT(
     swLngLat: Position,
     callback: (error?: unknown, hgt?: HGTData) => void,
 ) {
+    const Key = path;
+
+    if (missingTiles.has(Key)) {
+        return callback(`Tile missing: ${Key}`);
+    }
+
     s3Client
-        .send(
-            new GetObjectCommand({
-                Bucket: process.env.AWS_ELEVATION_BUCKET,
-                Key: path,
-            }),
-        )
+        .send(new GetObjectCommand({Bucket: process.env.AWS_ELEVATION_BUCKET, Key}))
         .then(async (dem) => {
             if (dem.ContentLength === undefined) return callback(`No content length for ${path}`);
 
@@ -40,7 +43,12 @@ export function HGT(
                 swLngLat,
             });
         })
-        .catch((error) => {
+        .catch((error: unknown) => {
+            if (isTileNotFound(error)) {
+                missingTiles.add(error.Key);
+            }
+
+            console.log(error);
             console.log(`Error fetching tile ${path}`, error);
             callback(`Error fetching tile ${path}`);
         });
@@ -79,4 +87,10 @@ function streamToBuffer(stream: Stream): Promise<Buffer> {
         stream.on('error', reject);
         stream.on('end', () => resolve(Buffer.concat(chunks)));
     });
+}
+
+function isTileNotFound(error: unknown): error is {Code: 'NoSuchKey'; Key: string} {
+    return (
+        typeof error === 'object' && error !== null && 'Code' in error && error.Code === 'NoSuchKey'
+    );
 }
