@@ -1,6 +1,6 @@
 import path from 'node:path';
 import {LRUCache} from 'lru-cache';
-import {coordAll, coordEach} from '@turf/meta';
+import {coordEach} from '@turf/meta';
 import {fetchHGTData, HGTData, getHGTElevation} from '../HGT/index.js';
 import {Feature, FeatureCollection, Geometry, Position} from 'geojson';
 
@@ -107,26 +107,22 @@ export class GaiaTileSet {
     }
 
     /**
-     * Adds elevation data to the coordinates of a GeoJSON object.
+     * Adds elevation data to the coordinates of a GeoJSON object. Mutates the GeoJSON input.
      */
-    addElevation<T extends FeatureCollection | Feature | Geometry>(
-        geojson: T,
-        callback: (error: unknown, geojson?: T) => void,
-    ) {
-        // Elevation lookups are async, so we need to keep track of how many coordinates
-        // have successfully been elevated and only callback once all have completed
-        const coordCount = coordAll(geojson).length;
-        let elevated = 0;
-        coordEach(geojson, (coord) => {
-            this.getElevation([coord[0], coord[1]], (elevation) => {
-                coord[2] = elevation === NO_DATA ? 0 : elevation;
+    async addElevation<T extends FeatureCollection | Feature | Geometry>(geoJson: T) {
+        const promises: Promise<void>[] = [];
 
-                elevated++;
-
-                if (elevated === coordCount) {
-                    callback(undefined, geojson);
-                }
-            });
+        coordEach(geoJson, (coord) => {
+            promises.push(
+                new Promise((resolve) => {
+                    this.getElevation([coord[0], coord[1]], (elevation) => {
+                        coord[2] = elevation === NO_DATA ? 0 : elevation;
+                        resolve();
+                    });
+                }),
+            );
         });
+
+        await Promise.all(promises);
     }
 }

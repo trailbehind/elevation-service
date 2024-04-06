@@ -45,20 +45,15 @@ fastify.addHook('onTimeout', async (_request, reply) => {
 });
 
 fastify.post('/geojson', async (req, reply) => {
-    const geojson = req.body;
+    const geoJson = req.body;
 
-    if (!isGeoJson(geojson)) {
+    if (!isGeoJson(geoJson)) {
         return reply.code(400).send({Error: 'invalid geojson'});
     }
 
     try {
-        const output = await new Promise<typeof geojson>((resolve, reject) => {
-            tiles.addElevation(geojson, (error, output) =>
-                error ? reject(error) : resolve(output!),
-            );
-        });
-
-        await reply.send(output);
+        await tiles.addElevation(geoJson);
+        await reply.send(geoJson);
     } catch (error) {
         fastify.log.error(error);
         await reply.code(500).send({Error: 'Elevation unavailable'});
