@@ -1,7 +1,7 @@
 import path from 'node:path';
 import {LRUCache} from 'lru-cache';
 import {coordAll, coordEach} from '@turf/meta';
-import {HGT, HGTData, getHGTElevation} from '../HGT/index.js';
+import {fetchHGTData, HGTData, getHGTElevation} from '../HGT/index.js';
 import {Feature, FeatureCollection, Geometry, Position} from 'geojson';
 
 type LoadTileCallback = (error: unknown, tile?: HGTData) => void;
@@ -70,18 +70,24 @@ export class GaiaTileSet {
 
         const start = process.hrtime.bigint();
 
-        HGT(path.join(this.#tileDir, key + '.hgt'), [lngDegrees, latDegrees], (error, tile) => {
-            const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
+        fetchHGTData(
+            path.join(this.#tileDir, key + '.hgt'),
+            [lngDegrees, latDegrees],
+            (error, tile) => {
+                const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
 
-            if (ms > 1000) console.log(`Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`);
+                if (ms > 1000) console.log(`Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`);
 
-            if (!error) this.#cache.set(key, tile);
+                if (!error) this.#cache.set(key, tile);
 
-            // Call all of the queued callbacks
-            this.#tileLoadingQueue[key].forEach((cb) => (error ? cb(error) : cb(undefined, tile)));
+                // Call all of the queued callbacks
+                this.#tileLoadingQueue[key].forEach((cb) =>
+                    error ? cb(error) : cb(undefined, tile),
+                );
 
-            delete this.#tileLoadingQueue[key];
-        });
+                delete this.#tileLoadingQueue[key];
+            },
+        );
     }
 
     /**

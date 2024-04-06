@@ -1,18 +1,18 @@
+// Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
+
 import {S3Client, GetObjectCommand} from '@aws-sdk/client-s3';
 import {Stream} from 'node:stream';
 import type {HGTData} from './types.js';
 import {Position} from 'geojson';
 
-const THREE_ARC_SECOND = 1442401 * 2;
-const ONE_ARC_SECOND = 12967201 * 2;
-
-const missingTiles = new Set<string>();
+const getResolutionAndSizeError = Symbol();
 
 const s3Client = new S3Client({region: process.env.AWS_REGION});
+const THREE_ARC_SECOND = 1442401 * 2;
+const ONE_ARC_SECOND = 12967201 * 2;
+const missingTiles = new Set<string>();
 
-// Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
-
-export function HGT(
+export function fetchHGTData(
     path: string,
     swLngLat: Position,
     callback: (error?: unknown, hgt?: HGTData) => void,
@@ -28,9 +28,7 @@ export function HGT(
         .then(async (dem) => {
             if (dem.ContentLength === undefined) return callback(`No content length for ${path}`);
 
-            const [resError, resAndSize] = getResolutionAndSize(dem.ContentLength);
-
-            if (resError) return callback(resError);
+            const resAndSize = getResolutionAndSize(dem.ContentLength);
 
             if (dem.Body === undefined) return callback(`No body for ${path}`);
 
@@ -38,14 +36,19 @@ export function HGT(
 
             return callback(undefined, {
                 buffer,
-                resolution: resAndSize!.resolution,
-                size: resAndSize!.size,
+                resolution: resAndSize.resolution,
+                size: resAndSize.size,
                 swLngLat,
             });
         })
         .catch((error: unknown) => {
-            if (isTileNotFound(error)) {
+            if (isMissingTile(error)) {
                 missingTiles.add(error.Key);
+                return callback(`Tile missing: ${error.Key}`);
+            }
+
+            if (error === getResolutionAndSizeError) {
+                return callback('Unknown tile format (1 arcsecond and 3 arcsecond supported).');
             }
 
             console.log(error);
@@ -55,32 +58,19 @@ export function HGT(
 }
 
 // Via https://github.com/perliedman/node-hgt/blob/master/src/hgt.js#L16
-function getResolutionAndSize(
-    size: number,
-): [error?: unknown, resAndSize?: {resolution: number; size: number}] {
-    if (size === ONE_ARC_SECOND) {
-        return [
-            undefined,
-            {
-                resolution: 1,
-                size: 3601,
-            },
-        ];
-    } else if (size === THREE_ARC_SECOND) {
-        return [
-            undefined,
-            {
-                resolution: 3,
-                size: 1201,
-            },
-        ];
-    } else {
-        return ['Unknown tile format (1 arcsecond and 3 arcsecond supported).'];
+function getResolutionAndSize(size: number): {resolution: number; size: number} {
+    switch (size) {
+        case ONE_ARC_SECOND:
+            return {resolution: 1, size: 3601};
+        case THREE_ARC_SECOND:
+            return {resolution: 3, size: 1201};
+        default:
+            throw getResolutionAndSizeError;
     }
 }
 
 // Stream an HGT file from S3 into a buffer
-function streamToBuffer(stream: Stream): Promise<Buffer> {
+async function streamToBuffer(stream: Stream): Promise<Buffer> {
     return new Promise((resolve, reject) => {
         const chunks: Uint8Array[] = [];
         stream.on('data', (chunk: Uint8Array) => chunks.push(chunk));
@@ -89,7 +79,7 @@ function streamToBuffer(stream: Stream): Promise<Buffer> {
     });
 }
 
-function isTileNotFound(error: unknown): error is {Code: 'NoSuchKey'; Key: string} {
+function isMissingTile(error: unknown): error is {Code: 'NoSuchKey'; Key: string} {
     return (
         typeof error === 'object' && error !== null && 'Code' in error && error.Code === 'NoSuchKey'
     );
