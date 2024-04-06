@@ -5,7 +5,6 @@ import {fetchHGTData, HGTData, getHGTElevation} from '../HGT/index.js';
 import {Feature, FeatureCollection, Geometry, Position} from 'geojson';
 
 type LoadTileCallback = (error: unknown, tile?: HGTData) => void;
-type GetElevationCallback = (elevation: number | typeof NO_DATA) => void;
 type TileKey = `${'N' | 'S'}${string}${'E' | 'W'}${string}`;
 
 export const NO_DATA = Symbol();
@@ -93,17 +92,16 @@ export class GaiaTileSet {
     /**
      * Retrieves the elevation for a given coordinate.
      */
-    getElevation(coord: Position, callback: GetElevationCallback) {
-        this.#loadTile(coord, (error, tile) => {
-            if (error) return callback(NO_DATA);
+    async getElevation(coord: Position): Promise<number> {
+        try {
+            const tile = await new Promise<HGTData>((resolve, reject) => {
+                this.#loadTile(coord, (error, tile) => (error ? reject(error) : resolve(tile!)));
+            });
 
-            try {
-                const elevation = getHGTElevation(tile!, coord);
-                return callback(elevation);
-            } catch (error) {
-                return callback(NO_DATA);
-            }
-        });
+            return getHGTElevation(tile, coord);
+        } catch {
+            throw NO_DATA;
+        }
     }
 
     /**
@@ -114,15 +112,22 @@ export class GaiaTileSet {
 
         coordEach(geoJson, (coord) => {
             promises.push(
-                new Promise((resolve) => {
-                    this.getElevation([coord[0], coord[1]], (elevation) => {
-                        coord[2] = elevation === NO_DATA ? 0 : elevation;
-                        resolve();
-                    });
-                }),
+                this.getElevation(coord).then(
+                    (elevation) => {
+                        coord[2] = elevation;
+                    },
+                    (error: unknown) => {
+                        if (error === NO_DATA) {
+                            coord[2] = 0; // Default to Sea Level if data is missing
+                        } else {
+                            throw error; // Anything else is unhandled
+                        }
+                    },
+                ),
             );
         });
 
+        // Not `allSettled`: unhandled errors propagate
         await Promise.all(promises);
     }
 }

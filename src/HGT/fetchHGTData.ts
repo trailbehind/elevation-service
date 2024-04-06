@@ -11,6 +11,7 @@ const s3Client = new S3Client({region: process.env.AWS_REGION});
 const THREE_ARC_SECOND = 1442401 * 2;
 const ONE_ARC_SECOND = 12967201 * 2;
 const missingTiles = new Set<string>();
+const Bucket = process.env.AWS_ELEVATION_BUCKET;
 
 export function fetchHGTData(
     path: string,
@@ -24,7 +25,7 @@ export function fetchHGTData(
     }
 
     s3Client
-        .send(new GetObjectCommand({Bucket: process.env.AWS_ELEVATION_BUCKET, Key}))
+        .send(new GetObjectCommand({Bucket, Key}))
         .then(async (dem) => {
             if (dem.ContentLength === undefined) return callback(`No content length for ${path}`);
 
