@@ -61,27 +61,29 @@ export class GaiaTileSet {
 
         if (this.#pending.has(key)) return this.#pending.get(key)!;
 
+        const hgtPath = path.join(this.#tileDir, `${key}.hgt`);
+
         const start = process.hrtime.bigint();
 
-        const promise = new Promise<HGTData>((resolve, reject) => {
-            fetchHGTData(
-                path.join(this.#tileDir, key + '.hgt'),
-                [lngDegrees, latDegrees],
-                (error, tile) => {
+        const promise = fetchHGTData(hgtPath, [lngDegrees, latDegrees]);
+
+        promise
+            .then(
+                (tile) => {
                     const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
-
-                    if (ms > 1000)
+                    if (ms > 1000) {
                         console.log(`Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`);
-
-                    if (error) {
-                        reject(error);
-                    } else {
-                        this.#cache.set(key, tile);
-                        resolve(tile!);
                     }
+
+                    this.#cache.set(key, tile);
+
+                    return tile;
                 },
-            );
-        }).finally(() => this.#pending.delete(key));
+                (error) => {
+                    throw error;
+                },
+            )
+            .finally(() => this.#pending.delete(key));
 
         this.#pending.set(key, promise);
 
