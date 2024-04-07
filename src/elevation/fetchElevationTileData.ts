@@ -6,6 +6,7 @@ import {fetchTileData} from '../fetchTileData.js';
 import {getElevationTileKey} from './getElevationTileKey.js';
 import {getResolutionAndSize} from './getResolutionAndSize.js';
 import {ElevationTileData} from './types.js';
+import {s3Fetcher} from '../s3Fetcher.js';
 
 const Bucket = process.env.AWS_ELEVATION_BUCKET!;
 const tileDir = process.env.TILE_DIRECTORY!;
@@ -16,7 +17,7 @@ export async function fetchElevationTileData([lng, lat]: Position): Promise<Elev
 
     const Key = path.join(tileDir, `${getElevationTileKey(lngDegrees, latDegrees)}.hgt`);
 
-    const buffer = await fetchTileData(Bucket, Key);
+    const buffer = await fetchTileData(s3Fetcher, Bucket, Key);
 
     const {resolution, size} = getResolutionAndSize(buffer.length);
 

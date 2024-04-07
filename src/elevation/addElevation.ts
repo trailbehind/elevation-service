@@ -11,18 +11,17 @@ export async function addElevation<T extends FeatureCollection | Feature | Geome
 
     coordEach(geoJson, (coord) => {
         promises.push(
-            getElevation(coord).then(
-                (elevation) => {
+            getElevation(coord)
+                .then((elevation) => {
                     coord[2] = elevation;
-                },
-                (error: unknown) => {
+                })
+                .catch((error: unknown) => {
                     if (error === NO_DATA) {
                         coord[2] = 0; // Default to sea level if data is missing
                     } else {
                         throw error; // Anything else is unhandled
                     }
-                },
-            ),
+                }),
         );
     });
 

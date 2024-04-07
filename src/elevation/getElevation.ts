@@ -8,11 +8,12 @@ export async function getElevation(coord: Position) {
         const hgt = await fetchElevationTileData(coord);
 
         const size = hgt.size - 1;
+
         const row = (coord[1] - hgt.swLngLat[1]) * size;
         const col = (coord[0] - hgt.swLngLat[0]) * size;
 
         if (row < 0 || col < 0 || row > size || col > size) {
-            throw `Latitude/longitude is outside tile bounds (row=${row}, col=${col}; size=${size})`;
+            throw `Lat/lng is outside tile bounds (row=${row}, col=${col}; size=${size})`;
         }
 
         // This could be changed to nearestNeighbor or configured with options,
