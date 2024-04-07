@@ -4,7 +4,6 @@ import {coordEach} from '@turf/meta';
 import {fetchHGTData, HGTData, getHGTElevation} from '../HGT/index.js';
 import {Feature, FeatureCollection, Geometry, Position} from 'geojson';
 
-type LoadTileCallback = (error: unknown, tile?: HGTData) => void;
 type TileKey = `${'N' | 'S'}${string}${'E' | 'W'}${string}`;
 
 export const NO_DATA = Symbol();
@@ -12,12 +11,12 @@ export const NO_DATA = Symbol();
 export class GaiaTileSet {
     #tileDir: string;
     #cache = new LRUCache<TileKey, HGTData>({
-        maxSize: 500000000, // 500 MB
+        maxSize: 500_000_000, // 500 MB
         sizeCalculation: (n) => n.buffer.length,
         ttl: 1000 * 60 * 60 * 24 * 30, // 30 days
         updateAgeOnGet: true,
     });
-    #tileLoadingQueue: Record<TileKey, LoadTileCallback[]> = {};
+    #pending = new Map<TileKey, Promise<HGTData>>();
 
     constructor(tileDir: string) {
         this.#tileDir = tileDir;
@@ -53,40 +52,40 @@ export class GaiaTileSet {
      *
      * @private
      */
-    #loadTile(coord: Position, callback: LoadTileCallback) {
+    async #loadTile(coord: Position): Promise<HGTData> {
         const [lngDegrees, latDegrees] = coord.map((n) => Math.floor(n));
 
         const key = GaiaTileSet.#getTileKey(lngDegrees, latDegrees);
 
-        if (this.#cache.has(key)) return callback(undefined, this.#cache.get(key));
+        if (this.#cache.has(key)) return this.#cache.get(key)!;
 
-        // We don't want to make more calls to the file system than necessary, so if we are waiting
-        // for a tile to load from disk we push the callback into a queue and clear the queue once
-        // the tile is done loading.
-        if (this.#tileLoadingQueue[key]) return this.#tileLoadingQueue[key].push(callback);
-
-        this.#tileLoadingQueue[key] = [callback];
+        if (this.#pending.has(key)) return this.#pending.get(key)!;
 
         const start = process.hrtime.bigint();
 
-        fetchHGTData(
-            path.join(this.#tileDir, key + '.hgt'),
-            [lngDegrees, latDegrees],
-            (error, tile) => {
-                const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
+        const promise = new Promise<HGTData>((resolve, reject) => {
+            fetchHGTData(
+                path.join(this.#tileDir, key + '.hgt'),
+                [lngDegrees, latDegrees],
+                (error, tile) => {
+                    const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
 
-                if (ms > 1000) console.log(`Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`);
+                    if (ms > 1000)
+                        console.log(`Loading tile ${key} took ${(ms / 1_000).toFixed(3)}s`);
 
-                if (!error) this.#cache.set(key, tile);
+                    if (error) {
+                        reject(error);
+                    } else {
+                        this.#cache.set(key, tile);
+                        resolve(tile!);
+                    }
+                },
+            );
+        }).finally(() => this.#pending.delete(key));
 
-                // Call all of the queued callbacks
-                this.#tileLoadingQueue[key].forEach((cb) =>
-                    error ? cb(error) : cb(undefined, tile),
-                );
+        this.#pending.set(key, promise);
 
-                delete this.#tileLoadingQueue[key];
-            },
-        );
+        return promise;
     }
 
     /**
@@ -94,10 +93,7 @@ export class GaiaTileSet {
      */
     async getElevation(coord: Position): Promise<number> {
         try {
-            const tile = await new Promise<HGTData>((resolve, reject) => {
-                this.#loadTile(coord, (error, tile) => (error ? reject(error) : resolve(tile!)));
-            });
-
+            const tile = await this.#loadTile(coord);
             return getHGTElevation(tile, coord);
         } catch {
             throw NO_DATA;

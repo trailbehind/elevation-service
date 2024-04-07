@@ -2,10 +2,8 @@
 
 import {S3Client, GetObjectCommand} from '@aws-sdk/client-s3';
 import {Stream} from 'node:stream';
-import type {HGTData} from './types.js';
+import {TILE_MISSING, type HGTData, UNSUPPORTED_SIZE, BAD_TILE} from './types.js';
 import {Position} from 'geojson';
-
-const getResolutionAndSizeError = Symbol();
 
 const s3Client = new S3Client({region: process.env.AWS_REGION});
 const THREE_ARC_SECOND = 1442401 * 2;
@@ -21,13 +19,13 @@ export function fetchHGTData(
     const Key = path;
 
     if (missingTiles.has(Key)) {
-        return callback(`Tile missing: ${Key}`);
+        return callback(TILE_MISSING);
     }
 
     s3Client
         .send(new GetObjectCommand({Bucket, Key}))
         .then(async (dem) => {
-            if (dem.ContentLength === undefined) return callback(`No content length for ${path}`);
+            if (dem.ContentLength === undefined) return callback(BAD_TILE);
 
             const resAndSize = getResolutionAndSize(dem.ContentLength);
 
@@ -43,13 +41,13 @@ export function fetchHGTData(
             });
         })
         .catch((error: unknown) => {
-            if (isMissingTile(error)) {
+            if (isNoSuchKeyError(error)) {
                 missingTiles.add(error.Key);
-                return callback(`Tile missing: ${error.Key}`);
+                return callback(TILE_MISSING);
             }
 
-            if (error === getResolutionAndSizeError) {
-                return callback('Unknown tile format (1 arcsecond and 3 arcsecond supported).');
+            if (error === UNSUPPORTED_SIZE) {
+                return callback(UNSUPPORTED_SIZE);
             }
 
             console.log(error);
@@ -66,7 +64,7 @@ function getResolutionAndSize(size: number): {resolution: number; size: number} 
         case THREE_ARC_SECOND:
             return {resolution: 3, size: 1201};
         default:
-            throw getResolutionAndSizeError;
+            throw UNSUPPORTED_SIZE;
     }
 }
 
@@ -80,7 +78,7 @@ async function streamToBuffer(stream: Stream): Promise<Buffer> {
     });
 }
 
-function isMissingTile(error: unknown): error is {Code: 'NoSuchKey'; Key: string} {
+function isNoSuchKeyError(error: unknown): error is {Code: 'NoSuchKey'; Key: string} {
     return (
         typeof error === 'object' && error !== null && 'Code' in error && error.Code === 'NoSuchKey'
     );
