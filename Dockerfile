@@ -1,15 +1,21 @@
-FROM node:lts
-
+FROM node:lts as base
+ENV PNPM_HOME=/opt/pnpm
+ENV PATH="$PATH:$PNPM_HOME"
 WORKDIR /srv
+RUN corepack enable
+COPY package.json pnpm-lock.yaml ./
 
-COPY package.json package-lock.json ./
 
-RUN npm install -g pm2
-RUN npm install
-
+FROM base as build
+RUN pnpm install --prod=false --frozen-lockfile
 COPY src src
 COPY tsconfig.json ./
-RUN npm run build
+RUN pnpm build
 
+
+FROM base as prod
+RUN pnpm install -g pm2
+RUN pnpm install --prod=true --frozen-lockfile
+COPY --from=build /srv/dist dist
 EXPOSE 5001
-CMD ["pm2-runtime", "npm start"]
+CMD ["pm2-runtime", "pnpm start"]

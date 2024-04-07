@@ -1,13 +1,14 @@
 {
     "name": "elevation-service",
+    "packageManager": "pnpm@8.15.6",
     "type": "module",
     "private": true,
     "version": "2.0.0",
     "scripts": {
         "start": "node dist/server.js",
-        "dev": "npm run build; concurrently \"npm run dev:watch\" \"npm run dev:start\"",
+        "dev": "pnpm build; concurrently \"pnpm:dev:*\"",
         "dev:watch": "tsc --watch",
-        "dev:start": "nodemon --watch 'dist' --exec 'npm start'",
+        "dev:start": "nodemon --watch 'dist' --exec 'pnpm start'",
         "build": "tsc",
         "test": "jest"
     },

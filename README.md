@@ -23,20 +23,22 @@ AWS_ELEVATION_BUCKET="com.gaiagps.dem"
 2. Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 3. Start the server:
 
 ```bash
-npm start
+pnpm start
 ```
 
 #### With Docker
 
 There is no need to run the Docker image locally; GaiaCloud will work directly with the elevation service running on "bare metal" via `npm start`.
 
-But, if you insist, to use the GaiaCloud `docker-compose-services/elevation.yml` service, you will need to build the Docker image with a specific tag.
+However, it is still useful to test the Docker image locally to ensure that any changes to the build process will not break in CI or production.
+
+To use the GaiaCloud `docker-compose-services/elevation.yml` service, you will need to build the Docker image with a specific tag.
 
 ```bash
 docker build -t gaiagps/elevation-service .
@@ -64,8 +66,8 @@ You can check the health of the server with the `/status` endpoint.
 ## Testing
 
 ```bash
-npm install
-npm run test
+pnpm install
+pnpm run test
 ```
 
 #### Environment

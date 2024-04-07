@@ -10,10 +10,8 @@ export const BAD_TILE = Symbol();
 // ... could signal other error conditions, e.g. bad permissions, network failure, etc.
 
 const cache = new LRUCache<bigint, Buffer>({
-    maxSize: 500_000_000, // 500 MB
-    sizeCalculation: ({length}) => length,
-    ttl: 1000 * 60 * 60 * 24 * 30, // 30 days
-    updateAgeOnGet: true,
+    sizeCalculation: (buffer) => buffer.length, // bytes
+    maxSize: 500_000_000, // 500 MB, specified in bytes because `sizeCalculation` returns bytes
 });
 
 const pending = new Map<bigint, Promise<Buffer>>();
@@ -40,7 +38,10 @@ export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ..
                 return buffer; // ...so pending requests will get the resolved value
             })
             .catch((error: unknown) => {
-                if (error === TILE_MISSING) missing.add(hash);
+                if (error === TILE_MISSING) {
+                    console.log(`Tile ${JSON.stringify(args)} is missing`);
+                    missing.add(hash);
+                }
                 throw error;
             })
             .finally(() => {

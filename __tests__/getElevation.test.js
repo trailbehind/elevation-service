@@ -1,4 +1,4 @@
-const getHGTElevation = require('./getElevation.js');
+const getHGTElevation = require('../src/elevation/getElevation.js');
 const HGT = require('./index.js');
 const path = require('path');
 
