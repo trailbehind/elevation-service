@@ -1,4 +1,4 @@
-const HGT = require('./');
+const HGT = require('./index.js');
 const path = require('path');
 
 test('it returns an error if a tile does not exist', () => {

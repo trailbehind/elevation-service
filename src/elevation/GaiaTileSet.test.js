@@ -1,4 +1,4 @@
-const GaiaTileSet = require('./GaiaTileSet');
+const GaiaTileSet = require('../GaiaTileSet/GaiaTileSet.js');
 const path = require('path');
 
 const TEST_DATA_DIR = path.join(__dirname, 'test', 'data');

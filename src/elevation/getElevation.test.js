@@ -1,5 +1,5 @@
-const getHGTElevation = require('./getHGTElevation');
-const HGT = require('./');
+const getHGTElevation = require('./getElevation.js');
+const HGT = require('./index.js');
 const path = require('path');
 
 test('it returns a valid elevation', (done) => {

@@ -1,12 +1,11 @@
 import 'dotenv/config';
 
-import {GaiaTileSet} from './GaiaTileSet/index.js';
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
 import {Feature, FeatureCollection, Geometry} from 'geojson';
+import {addElevation} from './elevation/addElevation.js';
 
 const port = parseInt(process.env.PORT!);
-const tiles = new GaiaTileSet(process.env.TILE_DIRECTORY!);
 const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
 const keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT!);
 const bodyLimit = parseInt(process.env.MAX_POST_SIZE!);
@@ -52,7 +51,7 @@ fastify.post('/geojson', async (req, reply) => {
     }
 
     try {
-        await tiles.addElevation(geoJson);
+        await addElevation(geoJson);
         await reply.send(geoJson);
     } catch (error) {
         fastify.log.error(error);
