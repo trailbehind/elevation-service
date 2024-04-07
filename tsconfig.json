@@ -1,4 +1,15 @@
 {
+    "files": [
+        "src/globals.d.ts",
+        "src/server.ts",
+        "src/s3Fetcher.ts",
+        "src/fetchTileData.ts",
+        "src/elevation/addElevation.ts",
+        "src/elevation/fetchElevationTileData.ts",
+        "src/elevation/getElevation.ts",
+        "src/elevation/getElevationTileKey.ts",
+        "src/elevation/shared.ts"
+    ],
     "compilerOptions": {
         "module": "NodeNext",
         "esModuleInterop": true,
@@ -6,9 +17,5 @@
         "moduleResolution": "NodeNext",
         "outDir": "dist",
         "strict": true
-    },
-    "watchOptions": {
-        "excludeDirectories": ["node_modules", "dist", "__tests__"]
-    },
-    "include": ["src/**/*"]
+    }
 }

@@ -5,7 +5,7 @@ import {Position} from 'geojson';
 import {fetchTileData} from '../fetchTileData.js';
 import {getElevationTileKey} from './getElevationTileKey.js';
 import {getResolutionAndSize} from './getResolutionAndSize.js';
-import {ElevationTileData} from './types.js';
+import {ElevationTileData} from './shared.js';
 import {s3Fetcher} from '../s3Fetcher.js';
 
 const Bucket = process.env.AWS_ELEVATION_BUCKET!;

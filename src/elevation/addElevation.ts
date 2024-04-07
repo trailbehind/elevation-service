@@ -1,7 +1,7 @@
 import {coordEach} from '@turf/meta';
 import {Feature, FeatureCollection, Geometry} from 'geojson';
 import {getElevation} from './getElevation.js';
-import {NO_DATA} from './types.js';
+import {NO_DATA} from './shared.js';
 
 /**
  * Adds elevation data to the coordinates of a GeoJSON object. Mutates the GeoJSON input.

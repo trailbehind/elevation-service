@@ -1,4 +1,4 @@
-import {UNSUPPORTED_SIZE} from './types.js';
+import {UNSUPPORTED_SIZE} from './shared.js';
 
 const THREE_ARC_SECOND = 1_442_401 * 2;
 const ONE_ARC_SECOND = 12_967_201 * 2;
