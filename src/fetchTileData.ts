@@ -3,11 +3,18 @@
 import fnv1a from '@sindresorhus/fnv1a';
 import {LRUCache} from 'lru-cache';
 
+// Generic type for a function that somehow fetches a tile and produces a `Buffer`, e.g.,
+// `s3Fetcher` fetches a tile from an S3 bucket.
 type Fetcher<T extends unknown[]> = (...args: T) => Promise<Buffer>;
 
-export const TILE_MISSING = Symbol(); // MUST be thrown by `Fetcher` to indicate a missing tile
+// Thrown by Fetchers to indicate a missing tile, which may (e.g. elevation) or may not be expected.
+export const TILE_MISSING = Symbol();
+
+// Generic error thrown by Fetchers to that signal something went wrong.
 export const BAD_TILE = Symbol();
-// ... could signal other error conditions, e.g. bad permissions, network failure, etc.
+
+// ...could signal other Fetcher error conditions, e.g. bad permissions, network failure, etc.
+
 
 const cache = new LRUCache<bigint, Buffer>({
     sizeCalculation: (buffer) => buffer.length, // bytes
@@ -45,7 +52,7 @@ export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ..
                 throw error;
             })
             .finally(() => {
-                pending.delete(hash); // ... else we will leak memory & LRU cache is pointless
+                pending.delete(hash); // ...else we will leak memory, and LRU cache is pointless
             }),
     );
 

@@ -19,8 +19,12 @@ export async function getElevation(coord: Position) {
         // This could be changed to nearestNeighbor or configured with options,
         // for example return hgt.options.interpolation.call(this, row, col);
         return bilinear(hgt, row, col);
-    } catch {
-        throw NO_DATA;
+    } catch (e: unknown) {
+        // treat `NO_DATA` as sea level
+        if (e === NO_DATA) return 0;
+
+        // Anything else is unhanded.
+        throw e;
     }
 }
 
