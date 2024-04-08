@@ -1,20 +1,21 @@
 version: 2.1
 orbs:
-    aws-cli: circleci/aws-cli@4.0
-    aws-ecr: circleci/aws-ecr@9.0
+  aws-cli: circleci/aws-cli@4.0
+  aws-ecr: circleci/aws-ecr@9.0
+
 
 jobs:
-    build_and_push:
-        docker:
-            - image: cimg/base:current
-        steps:
-            - checkout
-            - setup_remote_docker
-            - run:
-                  name: Build Details.
-                  command: |
-                      echo "Building Docker image using aws-ecr Orb commands."
-                      docker --version
+  build_and_push:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Details.
+          command: |
+            echo "Building Docker image using aws-ecr Orb commands."
+            docker --version
 
       - aws-ecr/ecr_login:
           region: us-east-1
@@ -25,13 +26,8 @@ jobs:
           dockerfile: Dockerfile
           tag: ${CIRCLE_SHA1}
 
-            - aws-ecr/build_image:
-                  region: us-east-1
-                  repo: gaiagps/elevation-service
-                  dockerfile: Dockerfile
-                  tag: ${CIRCLE_SHA1}
 
 workflows:
-    staging:
-        jobs:
-            - build_and_push
+  staging:
+    jobs:
+      - build_and_push
