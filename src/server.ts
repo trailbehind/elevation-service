@@ -43,8 +43,8 @@ fastify.addHook('onTimeout', async (_request, reply) => {
     await reply.code(500).send({Error: 'Request timed out'});
 });
 
-fastify.post('/geojson', async (req, reply) => {
-    const geoJson = req.body;
+fastify.post('/geojson', async (request, reply) => {
+    const geoJson = request.body;
 
     if (!isGeoJson(geoJson)) {
         return reply.code(400).send({Error: 'invalid geojson'});
