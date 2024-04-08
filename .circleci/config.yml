@@ -24,7 +24,7 @@ jobs:
           region: us-east-1
           repo: gaiagps/elevation-service
           dockerfile: Dockerfile
-          tag: ${CIRCLE_SHA1},${CIRCLE_BRANCH}
+          tag: ${CIRCLE_SHA1}
 
 
 workflows:
