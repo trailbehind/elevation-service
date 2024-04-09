@@ -18,7 +18,7 @@ export const BAD_TILE = Symbol();
 
 const cache = new LRUCache<bigint, Buffer>({
     sizeCalculation: (buffer) => buffer.length, // bytes
-    maxSize: 500_000_000, // 500 MB, specified in bytes because `sizeCalculation` returns bytes
+    maxSize: parseInt(process.env.MAX_LRU_SIZE!), // 500 MB, specified in bytes because `sizeCalculation` returns bytes
 });
 
 const pending = new Map<bigint, Promise<Buffer>>();
