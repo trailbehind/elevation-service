@@ -65,9 +65,20 @@ You can check the health of the server with the `/status` endpoint.
 
 ## Testing
 
+Tests are written using Node's native test runner, and are intended to run against production (i.e.,
+TSC-compiled) code. They use the `.env` environment variable, and also require AWS credentials
+(loaded from `~/.aws`).
+
+To run the tests, first build:
+
 ```bash
-pnpm install
-pnpm run test
+pnpm build
+```
+
+Then run:
+
+```bash
+pnpm test
 ```
 
 #### Environment
