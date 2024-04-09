@@ -6,28 +6,29 @@ import {coordEach} from '@turf/meta';
 import johnMuirTrail from '../data/JMT.json' with {type: 'json'};
 
 it('adds elevation to a FeatureCollection', async () => {
-    await addElevation(johnMuirTrail);
-    coordEach(johnMuirTrail, ([, , elev]) => {
-        assert.strictEqual(elev >= 0, true);
-    });
+    const jmt = structuredClone(johnMuirTrail);
+    await addElevation(jmt);
+    coordEach(jmt, ([, , elev]) => assert.strictEqual(elev >= 0, true));
 });
 
 it('adds elevation to a single Feature', async () => {
-    await addElevation(
+    const feature = structuredClone(
         johnMuirTrail.features[Math.floor(Math.random() * johnMuirTrail.features.length)],
     );
-    coordEach(johnMuirTrail.features[0], ([, , elev]) => {
-        assert.strictEqual(elev >= 0, true);
-    });
+
+    await addElevation(feature);
+
+    coordEach(feature, ([, , elev]) => assert.strictEqual(elev >= 0, true));
 });
 
 it('adds elevation to a geometry', async () => {
-    await addElevation(
+    const geometry = structuredClone(
         johnMuirTrail.features[Math.floor(Math.random() * johnMuirTrail.features.length)].geometry,
     );
-    coordEach(johnMuirTrail.features[0].geometry, ([, , elev]) => {
-        assert.strictEqual(elev >= 0, true);
-    });
+
+    await addElevation(geometry);
+
+    coordEach(geometry, ([, , elev]) => assert.strictEqual(elev >= 0, true));
 });
 
 it('returns 0 elevation for geometry with no data', async () => {
