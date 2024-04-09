@@ -8,17 +8,9 @@ Forked from https://github.com/perliedman/elevation-service
 
 #### Locally
 
-1. Create a `.env` file in the project root with the following content:
-
-```env
-PORT="5001"
-TILE_DIRECTORY="elevation-server-data"
-CONNECTION_TIMEOUT="70000"
-KEEP_ALIVE_TIMEOUT="65000"
-MAX_POST_SIZE="500000"
-AWS_REGION="us-east-1"
-AWS_ELEVATION_BUCKET="com.gaiagps.dem"
-```
+1. Create a `.env` file in the project root. While the `.env` does not contain any secrets, it is
+bad practice to commit environment variables to the Git repository; therefore, the contents of the
+`.env` can be found [in the project Wiki](https://github.com/trailbehind/elevation-service/wiki/Development-dotenv).
 
 2. Install dependencies:
 
