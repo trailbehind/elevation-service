@@ -1,7 +1,8 @@
-/* eslint-disable jest/no-commented-out-tests */
+import {test} from 'node:test';
+import assert from 'node:assert';
 
 test('nothing', () => {
-    expect(true).toBe(true);
+    assert.strictEqual(1, 1);
 });
 
 /*

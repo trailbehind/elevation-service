@@ -10,7 +10,7 @@
         "dev:watch": "tsc --watch",
         "dev:start": "nodemon --watch 'dist' --exec 'pnpm start'",
         "build": "tsc",
-        "test": "jest"
+        "test": "node --test"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.550.0",
@@ -28,12 +28,10 @@
         "concurrently": "^8.2.2",
         "eslint": "^9.0.0",
         "eslint-config-prettier": "^9.1.0",
-        "eslint-plugin-jest": "^28.2.0",
         "globals": "^15.0.0",
-        "jest": "^29.7.0",
         "nodemon": "^3.1.0",
         "prettier": "^3.2.5",
         "typescript": "^5.4.4",
-        "typescript-eslint": "^7.5.0"
+        "typescript-eslint": "^7.6.0"
     }
 }

@@ -1,11 +1,12 @@
-/* eslint-disable jest/no-commented-out-tests */
-const path = require('path');
+import path from 'node:path';
+import {test} from 'node:test';
+import assert from 'node:assert';
 
-const _TEST_DATA_DIR = path.join(__dirname, 'test', 'data');
+const _TEST_DATA_DIR = path.join(import.meta.dirname, 'test', 'data');
 const _NO_DATA = -99999;
 
 test('nothing', () => {
-    expect(true).toBe(true);
+    assert.strictEqual(1, 1);
 });
 
 /*
