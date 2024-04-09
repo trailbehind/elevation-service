@@ -44,7 +44,7 @@ To use the GaiaCloud `docker-compose-services/elevation.yml` service, you will n
 docker build -t gaiagps/elevation-service .
 ```
 
-Then, start the GaiaCloud backend with the service file:
+Then, start the [GaiaCloud](https://github.com/trailbehind/GaiaCloud/) backend with the service file:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose-services/elevation.yml up
