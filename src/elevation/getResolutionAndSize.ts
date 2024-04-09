@@ -14,8 +14,8 @@ export const threeArcSecondResolutionAndSize = {
 };
 
 // Via https://github.com/perliedman/node-hgt/blob/master/src/hgt.js#L16
-export function getResolutionAndSize(size: number): {resolution: number; size: number} {
-    switch (size) {
+export function getResolutionAndSize(bufferSize: number): {resolution: number; size: number} {
+    switch (bufferSize) {
         case ONE_ARC_SECOND:
             return oneArcSecondResolutionAndSize;
         case THREE_ARC_SECONDS:
