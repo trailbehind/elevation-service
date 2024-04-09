@@ -7,8 +7,10 @@ import johnMuirTrail from '../data/JMT.json' with {type: 'json'};
 
 it('adds elevation to a FeatureCollection', async () => {
     const jmt = structuredClone(johnMuirTrail);
+
     await addElevation(jmt);
-    coordEach(jmt, ([, , elev]) => assert.strictEqual(elev >= 0, true));
+
+    coordEach(jmt, ([, , elev]) => assert.strictEqual(elev > 0, true));
 });
 
 it('adds elevation to a single Feature', async () => {
@@ -18,7 +20,7 @@ it('adds elevation to a single Feature', async () => {
 
     await addElevation(feature);
 
-    coordEach(feature, ([, , elev]) => assert.strictEqual(elev >= 0, true));
+    coordEach(feature, ([, , elev]) => assert.strictEqual(elev > 0, true));
 });
 
 it('adds elevation to a geometry', async () => {
@@ -28,7 +30,7 @@ it('adds elevation to a geometry', async () => {
 
     await addElevation(geometry);
 
-    coordEach(geometry, ([, , elev]) => assert.strictEqual(elev >= 0, true));
+    coordEach(geometry, ([, , elev]) => assert.strictEqual(elev > 0, true));
 });
 
 it('returns 0 elevation for geometry with no data', async () => {
@@ -45,7 +47,5 @@ it('returns 0 elevation for geometry with no data', async () => {
 
     await addElevation(somewhereOffTheCoastOfAfrica);
 
-    coordEach(somewhereOffTheCoastOfAfrica, ([, , elev]) => {
-        assert.strictEqual(elev, 0);
-    });
+    coordEach(somewhereOffTheCoastOfAfrica, ([, , elev]) => assert.strictEqual(elev, 0));
 });
