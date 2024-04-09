@@ -1,6 +1,6 @@
 import type {Position} from 'geojson';
 import {fetchElevationTileData} from './fetchElevationTileData.js';
-import {ElevationTileData, NO_DATA} from './shared.js';
+import {type ElevationTileData, NO_DATA} from './shared.js';
 
 // This file is largely derived from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 export async function getElevation(coord: Position) {

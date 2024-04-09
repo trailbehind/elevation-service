@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
-import {Feature, FeatureCollection, Geometry} from 'geojson';
+import type {Feature, FeatureCollection, Geometry} from 'geojson';
 import {addElevation} from './elevation/addElevation.js';
 
 const port = parseInt(process.env.PORT!);

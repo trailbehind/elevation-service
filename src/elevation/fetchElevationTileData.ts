@@ -1,11 +1,11 @@
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 
 import path from 'node:path';
-import {Position} from 'geojson';
+import {type Position} from 'geojson';
 import {TILE_MISSING, fetchTileData} from '../fetchTileData.js';
 import {getElevationTileKey} from './getElevationTileKey.js';
 import {getResolutionAndSize} from './getResolutionAndSize.js';
-import {ElevationTileData, NO_DATA} from './shared.js';
+import {type ElevationTileData, NO_DATA} from './shared.js';
 import {s3Fetcher} from '../s3Fetcher.js';
 
 const Bucket = process.env.AWS_ELEVATION_BUCKET!;

@@ -1,5 +1,5 @@
 import {coordEach} from '@turf/meta';
-import {Feature, FeatureCollection, Geometry} from 'geojson';
+import type {Feature, FeatureCollection, Geometry} from 'geojson';
 import {getElevation} from './getElevation.js';
 
 /**
