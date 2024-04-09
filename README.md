@@ -34,7 +34,7 @@ pnpm start
 
 #### With Docker
 
-There is no need to run the Docker image locally; GaiaCloud will work directly with the elevation service running on "bare metal" via `npm start`.
+There is no need to run the Docker image locally; GaiaCloud will work directly with the elevation service running on "bare metal" via `pnpm start`.
 
 However, it is still useful to test the Docker image locally to ensure that any changes to the build process will not break in CI or production.
 
