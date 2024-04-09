@@ -11,11 +11,15 @@
         "src/elevation/shared.ts"
     ],
     "compilerOptions": {
-        "module": "NodeNext",
         "esModuleInterop": true,
-        "target": "ESNext",
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "outDir": "dist",
-        "strict": true
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "verbatimModuleSyntax": true
     }
 }
