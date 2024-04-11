@@ -1,15 +1,5 @@
 {
-    "files": [
-        "src/globals.d.ts",
-        "src/server.ts",
-        "src/s3Fetcher.ts",
-        "src/fetchTileData.ts",
-        "src/elevation/addElevation.ts",
-        "src/elevation/fetchElevationTileData.ts",
-        "src/elevation/getElevation.ts",
-        "src/elevation/getElevationTileKey.ts",
-        "src/elevation/shared.ts"
-    ],
+    "include": ["src/**/*.ts"],
     "compilerOptions": {
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
