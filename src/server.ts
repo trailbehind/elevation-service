@@ -24,17 +24,7 @@ const fastify = Fastify({
 fastify.server.headersTimeout = connectionTimeout;
 
 await fastify.register(cors, {
-    origin: (origin, cb) => {
-        switch (origin) {
-            case 'http://localhost:8000':
-            case 'https://www.gaiagps.com':
-            case 'https://www-staging.gaiagps.com':
-            case 'https://www-admin.gaiagps.xyz':
-                return cb(null, origin);
-            default:
-                return cb(new Error('Not allowed'), []);
-        }
-    },
+    origin: ['*'],
     methods: ['GET', 'OPTIONS'],
     allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
     maxAge: 300,
