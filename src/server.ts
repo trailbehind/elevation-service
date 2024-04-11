@@ -29,6 +29,7 @@ await fastify.register(cors, {
             case 'http://localhost:8000':
             case 'https://www.gaiagps.com':
             case 'https://www-staging.gaiagps.com':
+            case 'https://www-admin.gaiagps.xyz':
                 return cb(null, origin);
             default:
                 return cb(new Error('Not allowed'), []);
