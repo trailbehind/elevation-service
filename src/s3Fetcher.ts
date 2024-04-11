@@ -1,5 +1,6 @@
 import {GetObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {BAD_TILE, TILE_MISSING} from './fetchTileData.js';
+import {fastify} from './server.js';
 
 const s3Client = new S3Client({region: process.env.AWS_REGION});
 
@@ -17,7 +18,7 @@ export async function s3Fetcher(Bucket: string, Key: string): Promise<Buffer> {
     } finally {
         const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
         if (ms > 1000) {
-            console.log(`Loading s3://${Bucket}/${Key} took ${(ms / 1_000).toFixed(3)}s`);
+            fastify.log.info(`Loading s3://${Bucket}/${Key} took ${(ms / 1_000).toFixed(3)}s`);
         }
     }
 }

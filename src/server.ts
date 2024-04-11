@@ -10,7 +10,7 @@ const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
 const keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT!);
 const bodyLimit = parseInt(process.env.MAX_POST_SIZE!);
 
-const fastify = Fastify({
+export const fastify = Fastify({
     logger: true,
     ignoreTrailingSlash: true,
     disableRequestLogging: true,
@@ -24,7 +24,7 @@ const fastify = Fastify({
 fastify.server.headersTimeout = connectionTimeout;
 
 await fastify.register(cors, {
-    origin: ['*'],
+    origin: true,
     methods: ['GET', 'OPTIONS'],
     allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
     maxAge: 300,

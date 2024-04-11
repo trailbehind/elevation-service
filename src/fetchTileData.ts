@@ -2,6 +2,7 @@
 
 import fnv1a from '@sindresorhus/fnv1a';
 import {LRUCache} from 'lru-cache';
+import {fastify} from './server.js';
 
 // Generic type for a function that somehow fetches a tile and produces a `Buffer`, e.g.,
 // `s3Fetcher` fetches a tile from an S3 bucket.
@@ -14,7 +15,6 @@ export const TILE_MISSING = Symbol();
 export const BAD_TILE = Symbol();
 
 // ...could signal other Fetcher error conditions, e.g. bad permissions, network failure, etc.
-
 
 const cache = new LRUCache<bigint, Buffer>({
     sizeCalculation: (buffer) => buffer.length, // bytes
@@ -46,7 +46,7 @@ export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ..
             })
             .catch((error: unknown) => {
                 if (error === TILE_MISSING) {
-                    console.log(`Tile ${JSON.stringify(args)} is missing`);
+                    fastify.log.info(`Tile ${JSON.stringify(args)} is missing`);
                     missing.add(hash);
                 }
                 throw error;
