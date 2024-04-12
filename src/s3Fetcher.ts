@@ -4,6 +4,19 @@ import {fastify} from './server.js';
 
 const s3Client = new S3Client({region: process.env.AWS_REGION});
 
+let n = 0;
+let mean = 0;
+let sumOfSquares = 0;
+let stdDev = 0;
+
+setInterval(
+    () => {
+        if (mean === 0) return;
+        fastify.log.info({s3Stats: {n, mean, stdDev}});
+    },
+    1_000 * 60 * 5,
+);
+
 export async function s3Fetcher(Bucket: string, Key: string): Promise<Buffer> {
     const start = process.hrtime.bigint();
 
@@ -17,8 +30,22 @@ export async function s3Fetcher(Bucket: string, Key: string): Promise<Buffer> {
         throw BAD_TILE;
     } finally {
         const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
-        if (ms > 1000) {
-            fastify.log.info(`Loading s3://${Bucket}/${Key} took ${(ms / 1_000).toFixed(3)}s`);
+
+        // update mean and stdDev
+        ++n;
+        const prevMean = mean;
+        mean = mean + (ms - mean) / n;
+        sumOfSquares = sumOfSquares + (ms - prevMean) * (ms - mean);
+        if (n > 1) stdDev = Math.sqrt(sumOfSquares / (n - 1));
+
+        if (stdDev > 0) {
+            const zScore = (ms - mean) / stdDev;
+            if (Math.abs(zScore) >= 2) {
+                fastify.log.info({
+                    slowS3Request: {Bucket, Key, ms, zScore},
+                    tileFetchStats: {n, mean, stdDev},
+                });
+            }
         }
     }
 }
