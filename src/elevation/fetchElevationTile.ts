@@ -5,24 +5,23 @@ import {type Position} from 'geojson';
 import {TILE_MISSING, fetchTileData} from '../fetchTileData.js';
 import {getElevationTileKey} from './getElevationTileKey.js';
 import {getResolutionAndSize} from './getResolutionAndSize.js';
-import {type ElevationTileData, NO_DATA} from './shared.js';
 import {s3Fetcher} from '../s3Fetcher.js';
+import {NO_DATA, type ElevationTile, type ElevationTileData, type Reader} from '../types.js';
 
 const Bucket = process.env.AWS_ELEVATION_BUCKET!;
 const tileDir = process.env.TILE_DIRECTORY!;
 
-export async function fetchElevationTileData([lng, lat]: Position): Promise<ElevationTileData> {
+export async function fetchElevationTile([lng, lat]: Position): Promise<ElevationTile> {
     try {
         const lngDegrees = Math.floor(lng);
         const latDegrees = Math.floor(lat);
+        const reader = getElevationTileReader(lngDegrees, latDegrees);
 
         const Key = path.join(tileDir, `${getElevationTileKey(lngDegrees, latDegrees)}.hgt`);
 
-        const buffer = await fetchTileData(s3Fetcher, Bucket, Key);
+        const {data} = await fetchTileData(s3Fetcher, reader, Bucket, Key);
 
-        const {resolution, size} = getResolutionAndSize(buffer.length);
-
-        return {buffer, resolution, size, swLngLat: [lngDegrees, latDegrees]};
+        return data;
     } catch (e: unknown) {
         // A missing tile is considered normal for elevation data, where we simply don't bother
         // keeping tiles with no elevation, e.g. the middle of the ocean. We indicate this
@@ -31,4 +30,16 @@ export async function fetchElevationTileData([lng, lat]: Position): Promise<Elev
 
         throw e;
     }
+}
+
+function getElevationTileReader(lngDegrees: number, latDegrees: number): Reader<ElevationTileData> {
+    return function readElevationTileData(buffer: Buffer): ElevationTileData {
+        const {resolution, size} = getResolutionAndSize(buffer.length);
+
+        return {
+            kind: 'elevation',
+            bytes: buffer.length,
+            data: {buffer, resolution, size, swLngLat: [lngDegrees, latDegrees]},
+        };
+    };
 }

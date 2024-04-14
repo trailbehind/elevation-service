@@ -3,10 +3,7 @@
 import fnv1a from '@sindresorhus/fnv1a';
 import {LRUCache} from 'lru-cache';
 import {fastify} from './server.js';
-
-// Generic type for a function that somehow fetches a tile and produces a `Buffer`, e.g.,
-// `s3Fetcher` fetches a tile from an S3 bucket.
-type Fetcher<T extends unknown[]> = (...args: T) => Promise<Buffer>;
+import type {Fetcher, Reader, TileData} from './types.js';
 
 // Thrown by Fetchers to indicate a missing tile, which may (e.g. elevation) or may not be expected.
 export const TILE_MISSING = Symbol();
@@ -16,7 +13,7 @@ export const BAD_TILE = Symbol();
 
 // ...could signal other Fetcher error conditions, e.g. bad permissions, network failure, etc.
 
-const pending = new Map<bigint, Promise<Buffer>>();
+const pending = new Map<bigint, Promise<TileData>>();
 
 const missing = new Set<bigint>();
 
@@ -24,8 +21,8 @@ let hits = 0;
 let misses = 0;
 let evictions = 0;
 
-const cache = new LRUCache<bigint, Buffer>({
-    sizeCalculation: (buffer) => buffer.length, // bytes
+const cache = new LRUCache<bigint, TileData>({
+    sizeCalculation: (tileData) => tileData.bytes,
     maxSize: parseInt(process.env.MAX_LRU_SIZE!), // should be same unit as `sizeCalculation`
     dispose: () => {
         ++evictions;
@@ -47,19 +44,23 @@ export const interval = setInterval(
     1_000 * 60 * 5, // 5 mins
 );
 
-export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ...args: T) {
+export async function fetchTileData<T extends unknown[], V extends TileData>(
+    fetcher: Fetcher<T>, // takes `...args` and returns a `Promise<Buffer>`
+    reader: Reader<V>, // takes the `Buffer` returned by `fetcher` and returns `TileData`
+    ...args: T // args used by `fetcher`
+): Promise<V> {
     const hash = fnv1a(JSON.stringify(args));
 
     // If the LRU cache has it, return it
     if (cache.has(hash)) {
         ++hits;
-        return cache.get(hash)!;
+        return cache.get(hash)! as V;
     } else {
         ++misses;
     }
 
     // If we're currently fetching it, return the promise
-    if (pending.has(hash)) return pending.get(hash)!;
+    if (pending.has(hash)) return pending.get(hash)! as Promise<V>;
 
     // If we know we can't get it, don't bother trying again
     if (missing.has(hash)) throw TILE_MISSING;
@@ -67,9 +68,10 @@ export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ..
     pending.set(
         hash,
         fetcher(...args)
-            .then((buffer) => {
-                cache.set(hash, buffer); // ...so future requests can use the cache
-                return buffer; // ...so pending requests will get the resolved value
+            .then((buffer) => reader(buffer))
+            .then((tileData) => {
+                cache.set(hash, tileData); // ...so future requests can use the cache
+                return tileData; // ...so pending requests will get the resolved value
             })
             .catch((error: unknown) => {
                 if (error === TILE_MISSING) missing.add(hash);
@@ -80,5 +82,5 @@ export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ..
             }),
     );
 
-    return pending.get(hash)!;
+    return pending.get(hash)! as Promise<V>;
 }

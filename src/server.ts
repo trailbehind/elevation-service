@@ -2,8 +2,9 @@ import 'dotenv/config';
 
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
-import type {Feature, FeatureCollection, Geometry} from 'geojson';
+import type {Feature, FeatureCollection, Geometry, Position} from 'geojson';
 import {addElevation} from './elevation/addElevation.js';
+import {getCellCoverage} from './cellCoverage/getCellCoverage.js';
 
 const port = parseInt(process.env.PORT!);
 const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
@@ -52,6 +53,21 @@ fastify.post('/geojson', async (request, reply) => {
 
 fastify.get('/status', async (_request, reply) => reply.send({success: true}));
 
+fastify.post('/cell', async (request, reply) => {
+    const coords = request.body;
+    if (!isCoordinates(coords)) {
+        return reply.code(400).send({Error: 'invalid coordinates'});
+    }
+
+    try {
+        const coverage = await getCellCoverage(coords);
+        await reply.send(coverage);
+    } catch (error) {
+        fastify.log.error(error);
+        await reply.code(500).send({Error: 'Cell coverage unavailable'});
+    }
+});
+
 try {
     await fastify.listen({port, host: '0.0.0.0'});
 } catch (error) {
@@ -86,4 +102,16 @@ function isGeoJson(geojson: unknown): geojson is FeatureCollection | Feature | G
         default:
             return false;
     }
+}
+
+function isCoordinates(coordinates: unknown): coordinates is Position[] {
+    return (
+        Array.isArray(coordinates) &&
+        coordinates.every(
+            (coord) =>
+                Array.isArray(coord) &&
+                coord.length >= 2 &&
+                coord.every((n) => typeof n === 'number'),
+        )
+    );
 }
