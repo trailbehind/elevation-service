@@ -2,7 +2,7 @@
 
 import fnv1a from '@sindresorhus/fnv1a';
 import {LRUCache} from 'lru-cache';
-import {fastify} from './server.js';
+import {server} from './server.js';
 
 // Generic type for a function that somehow fetches a tile and produces a `Buffer`, e.g.,
 // `s3Fetcher` fetches a tile from an S3 bucket.
@@ -32,14 +32,14 @@ const cache = new LRUCache<bigint, Buffer>({
     },
 });
 
-setInterval(
+export const interval = setInterval(
     () => {
         const accesses = hits + misses;
         const hitRate = accesses > 0 ? hits / accesses : 0;
         const evictionRate = accesses > 0 ? evictions / accesses : 0;
         const fillPercentage = cache.calculatedSize / cache.maxSize;
 
-        fastify.log.info({lruCacheStats: {fillPercentage, hitRate, evictionRate}});
+        server.log.info({lruCacheStats: {fillPercentage, hitRate, evictionRate}});
 
         // Reset stats each interval. Maybe @TODO: total stats?
         hits = misses = evictions = 0;
@@ -73,7 +73,7 @@ export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ..
             })
             .catch((error: unknown) => {
                 if (error === TILE_MISSING) {
-                    fastify.log.info(`Tile ${JSON.stringify(args)} is missing`);
+                    server.log.info(`Tile ${JSON.stringify(args)} is missing`);
                     missing.add(hash);
                 }
                 throw error;

@@ -1,9 +1,19 @@
 import 'dotenv/config';
 import assert from 'node:assert';
-import {it} from 'node:test';
+import {it, before, after} from 'node:test';
 import {addElevation} from '../../dist/elevation/addElevation.js';
 import {coordEach} from '@turf/meta';
 import johnMuirTrail from '../data/JMT.json' with {type: 'json'};
+import {interval as loggingInterval1} from '../../dist/fetchTileData.js';
+import {interval as loggingInterval2} from '../../dist/s3Fetcher.js';
+import {server} from '../../dist/server.js';
+
+// intervals prevent the test runner from exiting
+before(async () => {
+    clearInterval(loggingInterval1);
+    clearInterval(loggingInterval2);
+    await server.ready();
+});
 
 it('adds elevation to a FeatureCollection', async () => {
     const jmt = structuredClone(johnMuirTrail);
@@ -48,4 +58,8 @@ it('returns 0 elevation for geometry with no data', async () => {
     await addElevation(somewhereOffTheCoastOfAfrica);
 
     coordEach(somewhereOffTheCoastOfAfrica, ([, , elev]) => assert.strictEqual(elev, 0));
+});
+
+after(async () => {
+    await server.close();
 });

@@ -10,7 +10,7 @@ const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
 const keepAliveTimeout = parseInt(process.env.KEEP_ALIVE_TIMEOUT!);
 const bodyLimit = parseInt(process.env.MAX_POST_SIZE!);
 
-export const fastify = Fastify({
+export const server = Fastify({
     logger: true,
     ignoreTrailingSlash: true,
     disableRequestLogging: true,
@@ -21,20 +21,20 @@ export const fastify = Fastify({
 });
 
 // Add header for connection timeout to all responses
-fastify.server.headersTimeout = connectionTimeout;
+server.server.headersTimeout = connectionTimeout;
 
-await fastify.register(cors, {
+await server.register(cors, {
     origin: true,
     methods: ['GET', 'OPTIONS'],
     allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
     maxAge: 300,
 });
 
-fastify.addHook('onTimeout', async (_request, reply) => {
+server.addHook('onTimeout', async (_request, reply) => {
     await reply.code(500).send({Error: 'Request timed out'});
 });
 
-fastify.post('/geojson', async (request, reply) => {
+server.post('/geojson', async (request, reply) => {
     const geoJson = request.body;
 
     if (!isGeoJson(geoJson)) {
@@ -45,17 +45,17 @@ fastify.post('/geojson', async (request, reply) => {
         await addElevation(geoJson);
         await reply.send(geoJson);
     } catch (error) {
-        fastify.log.error(error);
+        server.log.error(error);
         await reply.code(500).send({Error: 'Elevation unavailable'});
     }
 });
 
-fastify.get('/status', async (_request, reply) => reply.send({success: true}));
+server.get('/status', async (_request, reply) => reply.send({success: true}));
 
 try {
-    await fastify.listen({port, host: '0.0.0.0'});
+    await server.listen({port});
 } catch (error) {
-    fastify.log.error(error);
+    server.log.error(error);
     process.exit(1);
 }
 
