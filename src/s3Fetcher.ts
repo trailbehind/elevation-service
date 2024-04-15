@@ -46,7 +46,7 @@ export async function s3Fetcher(Bucket: string, Key: string): Promise<Buffer> {
             if (z >= 2) {
                 fastify.log.info({
                     slowS3Request: {Bucket, Key, ms, z},
-                    tileFetchStats: {n, mean, stdDev},
+                    s3Stats: {n, mean, stdDev},
                 });
             }
         }
