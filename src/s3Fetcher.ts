@@ -1,6 +1,6 @@
 import {GetObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {BAD_TILE, TILE_MISSING} from './fetchTileData.js';
-import {server} from './server.js';
+import {fastify} from './server.js';
 
 const s3Client = new S3Client({region: process.env.AWS_REGION});
 
@@ -12,7 +12,7 @@ let stdDev = 0;
 export const interval = setInterval(
     () => {
         if (mean === 0) return;
-        server.log.info({s3Stats: {n, mean, stdDev}});
+        fastify.log.info({s3Stats: {n, mean, stdDev}});
     },
     1_000 * 60 * 5,
 );
@@ -44,7 +44,7 @@ export async function s3Fetcher(Bucket: string, Key: string): Promise<Buffer> {
         if (stdDev > 0) {
             const z = (ms - mean) / stdDev;
             if (z >= 2) {
-                server.log.info({
+                fastify.log.info({
                     slowS3Request: {Bucket, Key, ms, z},
                     tileFetchStats: {n, mean, stdDev},
                 });
