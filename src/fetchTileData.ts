@@ -72,10 +72,7 @@ export async function fetchTileData<T extends unknown[]>(fetcher: Fetcher<T>, ..
                 return buffer; // ...so pending requests will get the resolved value
             })
             .catch((error: unknown) => {
-                if (error === TILE_MISSING) {
-                    server.log.info(`Tile ${JSON.stringify(args)} is missing`);
-                    missing.add(hash);
-                }
+                if (error === TILE_MISSING) missing.add(hash);
                 throw error;
             })
             .finally(() => {
