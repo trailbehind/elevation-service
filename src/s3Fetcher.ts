@@ -38,7 +38,7 @@ export async function s3Fetcher(Bucket: string, Key: string): Promise<Buffer> {
         sumOfSquares = sumOfSquares + (ms - prevMean) * (ms - mean);
 
         // wait for 10 samples before calculating stdDev
-        if (n > 10) stdDev = Math.sqrt(sumOfSquares / (n - 1));
+        if (n >= 10) stdDev = Math.sqrt(sumOfSquares / (n - 1));
 
         // log slow requests (z >= +2)
         if (stdDev > 0) {
