@@ -8,17 +8,45 @@ Forked from https://github.com/perliedman/elevation-service
 
 #### Locally
 
-````bash
-npm install
-AWS_ELEVATION_BUCKET=com.gaiagps.dem TILE_DIRECTORY=elevation-server-data node index.js
-````
+1. Create a `.env` file in the project root. While the `.env` does not contain any secrets, it is
+bad practice to commit environment variables to the Git repository; therefore, the contents of the
+`.env` can be found [in the project Wiki](https://github.com/trailbehind/elevation-service/wiki/Development-dotenv).
+
+2. Install dependencies:
+
+```bash
+pnpm install
+```
+
+3. Start the server:
+
+```bash
+pnpm start
+```
 
 #### With Docker
 
-````bash
+There is no need to run the Docker image locally; GaiaCloud will work directly with the elevation service running on "bare metal" via `pnpm start`.
+
+However, it is still useful to test the Docker image locally to ensure that any changes to the build process will not break in CI or production.
+
+To use the GaiaCloud `docker-compose-services/elevation.yml` service, you will need to build the Docker image with a specific tag.
+
+```bash
 docker build -t gaiagps/elevation-service .
-docker run --env AWS_ELEVATION_BUCKET=com.gaiagps.dem --env TILE_DIRECTORY=elevation-server-data --volume ~/.aws:/root/.aws --publish 5001:5001 --detach --name elevation-service gaiagps/elevation-service
-````
+```
+
+Then, start the [GaiaCloud](https://github.com/trailbehind/GaiaCloud/) backend with the service file:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose-services/elevation.yml up
+```
+
+Then, separately start the frontend with the elevation service configured:
+
+```bash
+LOCAL_SERVICES=elevation pnpm start:frontend
+```
 
 ## Usage
 
@@ -27,19 +55,24 @@ coordinates will have a third component containing elevation added.
 
 You can check the health of the server with the `/status` endpoint.
 
-
 ## Testing
 
-````bash
-npm install
-npm run test
-````
+Tests are written using Node's native test runner, and are intended to run against production (i.e.,
+TSC-compiled) code. They use the `.env` environment variable, and also require AWS credentials
+(loaded from `~/.aws`).
+
+To run the tests, first build:
+
+```bash
+pnpm build
+```
+
+Then run:
+
+```bash
+pnpm test
+```
 
 #### Environment
 
-- `PORT`: default `5001`
-- `TILE_DIRECTORY`: default `./data`. Can also be an S3 prefix
-- `AWS_ELEVATION_BUCKET`: S3 bucket that contains elevation data
-- `AWS_REGION`: Region for `ELEVATION_BUCKET`
-- `NO_DATA`: default `undefined`
-- `MAX_POST_SIZE`: default `500kb`
+See the `.env` contents above.

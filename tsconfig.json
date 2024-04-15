@@ -1,0 +1,15 @@
+{
+    "include": ["src/**/*.ts"],
+    "compilerOptions": {
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "isolatedModules": true,
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "outDir": "dist",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "verbatimModuleSyntax": true
+    }
+}
