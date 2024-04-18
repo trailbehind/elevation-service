@@ -6,15 +6,16 @@ import {
     cellProviders,
     type CellCoverageTile,
     type CellCoverageTileData,
+    type PixelCoordinate,
 } from '../types.js';
 import {urlFetcher} from '../urlFetcher.js';
 import {getCellCoverageTileUrl} from './getCellCoverageTileUrl.js';
 
 export async function fetchCellCoverageTile(
-    worldCoord: [number, number, number],
+    pixelCoord: PixelCoordinate,
 ): Promise<CellCoverageTile> {
     try {
-        const url = getCellCoverageTileUrl(worldCoord);
+        const url = getCellCoverageTileUrl(pixelCoord);
         const {data} = await fetchTileData(urlFetcher, reader, url);
         return data;
     } catch (ex: unknown) {

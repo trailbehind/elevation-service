@@ -53,3 +53,5 @@ export type GetCoverageFromLayerArgs = {
     numFeatures: number;
     worldCoord: [x: number, y: number];
 };
+
+export type PixelCoordinate = [x: number, y: number, z: number];
