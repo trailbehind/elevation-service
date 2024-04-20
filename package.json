@@ -9,7 +9,7 @@
         "dev": "pnpm build; concurrently \"pnpm:dev:*\"",
         "dev:watch": "tsc --watch",
         "dev:start": "nodemon --watch 'dist' --exec 'pnpm start'",
-        "build": "tsc",
+        "build": "tsc --build --clean; tsc --build",
         "test": "node --test --test-concurrency=1"
     },
     "dependencies": {
