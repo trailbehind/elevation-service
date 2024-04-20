@@ -3,7 +3,7 @@
 import fnv1a from '@sindresorhus/fnv1a';
 import {LRUCache} from 'lru-cache';
 import {fastify} from './server.js';
-import type {Fetcher, Reader, TileData} from './types.js';
+import type {Fetcher, Reader, CacheItem} from './types.js';
 
 // Thrown by Fetchers to indicate a missing tile, which may (e.g. elevation) or may not be expected.
 export const TILE_MISSING = Symbol();
@@ -13,7 +13,7 @@ export const BAD_TILE = Symbol();
 
 // ...could signal other Fetcher error conditions, e.g. bad permissions, network failure, etc.
 
-const pending = new Map<bigint, Promise<TileData>>();
+const pending = new Map<bigint, Promise<CacheItem>>();
 
 const missing = new Set<bigint>();
 
@@ -21,7 +21,7 @@ let hits = 0;
 let misses = 0;
 let evictions = 0;
 
-const cache = new LRUCache<bigint, TileData>({
+const cache = new LRUCache<bigint, CacheItem>({
     sizeCalculation: (tileData) => tileData.bytes,
     maxSize: parseInt(process.env.MAX_LRU_SIZE!), // should be same unit as `sizeCalculation`
     dispose: () => {
@@ -44,7 +44,7 @@ export const interval = setInterval(
     1_000 * 60 * 5, // 5 mins
 );
 
-export async function fetchTileData<T extends unknown[], V extends TileData>(
+export async function fetchTileData<T extends unknown[], V extends CacheItem>(
     fetcher: Fetcher<T>, // takes `...args` and returns a `Promise<Buffer>`
     reader: Reader<V>, // takes the `Buffer` returned by `fetcher` and returns `TileData`
     ...args: T // args used by `fetcher`

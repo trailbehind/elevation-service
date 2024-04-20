@@ -1,8 +1,8 @@
-import type {VectorTile} from '@mapbox/vector-tile';
 import pointInPolygon from 'point-in-polygon';
 import {
     isCellCoverage,
     type CellCoverage,
+    type CellCoverageCacheData,
     type CellProvider,
     type PixelCoordinate,
 } from '../types.js';
@@ -20,12 +20,13 @@ import {
  * The goal is to maximize server throughput at the expense of increased latency for cell coverage.
  */
 export async function getPointCoverageFromTile(
-    tile: VectorTile,
+    data: CellCoverageCacheData,
     provider: CellProvider,
     pixelCoord: PixelCoordinate,
 ): Promise<CellCoverage> {
     return new Promise((resolve) => {
         setImmediate(() => {
+            const {tile} = data;
             const layer = tile.layers[provider];
             const {extent} = layer;
 

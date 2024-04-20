@@ -1,32 +1,38 @@
 import type {VectorTile, VectorTileLayer} from '@mapbox/vector-tile';
 import type {Position} from 'geojson';
+import type Flatbush from 'flatbush';
 
-export type ElevationTile = {
+export type ElevationCacheData = {
     buffer: Buffer;
     resolution: number;
     size: number;
     swLngLat: Position;
 };
 
-export type ElevationTileData = {
+export type ElevationCacheItem = {
     kind: 'elevation';
     bytes: number;
-    data: ElevationTile;
+    data: ElevationCacheData;
 };
 
 export type CellCoverageTile = VectorTile & {
     layers: Record<CellProvider, VectorTileLayer>;
 };
 
-export type CellCoverageTileData = {
-    kind: 'cellCoverage';
-    bytes: number;
-    data: CellCoverageTile;
+export type CellCoverageCacheData = {
+    tile: CellCoverageTile;
+    indexes: {[provider: string]: Flatbush};
 };
 
-export type TileData = ElevationTileData | CellCoverageTileData;
+export type CellCoverageCacheItem = {
+    kind: 'cellCoverage';
+    bytes: number;
+    data: CellCoverageCacheData;
+};
 
-export type Reader<V extends TileData> = (buffer: Buffer) => V;
+export type CacheItem = ElevationCacheItem | CellCoverageCacheItem;
+
+export type Reader<Item extends CacheItem> = (buffer: Buffer) => Item;
 
 // Generic type for a function that somehow fetches a tile and produces a `Buffer`, e.g.,
 // `s3Fetcher` fetches a tile from an S3 bucket.

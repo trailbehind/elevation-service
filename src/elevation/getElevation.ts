@@ -1,6 +1,6 @@
 import type {Position} from 'geojson';
 import {fetchElevationTile} from './fetchElevationTile.js';
-import {NO_DATA, type ElevationTile} from '../types.js';
+import {NO_DATA, type ElevationCacheData} from '../types.js';
 
 // This file is largely derived from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 export async function getElevation(coord: Position) {
@@ -28,7 +28,7 @@ export async function getElevation(coord: Position) {
     }
 }
 
-function bilinear(hgt: ElevationTile, row: number, col: number) {
+function bilinear(hgt: ElevationCacheData, row: number, col: number) {
     const rowLow = Math.floor(row);
     const rowHi = rowLow + 1;
     const rowFrac = row - rowLow;
@@ -49,10 +49,10 @@ function avg(v1: number, v2: number, f: number) {
     return v1 + (v2 - v1) * f;
 }
 
-function _nearestNeighbour(hgt: ElevationTile, row: number, col: number) {
+function _nearestNeighbour(hgt: ElevationCacheData, row: number, col: number) {
     return getRowCol(hgt, Math.round(row), Math.round(col));
 }
 
-function getRowCol(hgt: ElevationTile, row: number, col: number) {
+function getRowCol(hgt: ElevationCacheData, row: number, col: number) {
     return hgt.buffer.readInt16BE(((hgt.size - row - 1) * hgt.size + col) * 2);
 }

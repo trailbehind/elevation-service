@@ -6,12 +6,12 @@ import {TILE_MISSING, fetchTileData} from '../fetchTileData.js';
 import {getElevationTileKey} from './getElevationTileKey.js';
 import {getResolutionAndSize} from './getResolutionAndSize.js';
 import {s3Fetcher} from '../s3Fetcher.js';
-import {NO_DATA, type ElevationTile, type ElevationTileData, type Reader} from '../types.js';
+import {NO_DATA, type ElevationCacheData, type ElevationCacheItem, type Reader} from '../types.js';
 
 const Bucket = process.env.AWS_ELEVATION_BUCKET!;
 const tileDir = process.env.TILE_DIRECTORY!;
 
-export async function fetchElevationTile([lng, lat]: Position): Promise<ElevationTile> {
+export async function fetchElevationTile([lng, lat]: Position): Promise<ElevationCacheData> {
     try {
         const lngDegrees = Math.floor(lng);
         const latDegrees = Math.floor(lat);
@@ -32,8 +32,11 @@ export async function fetchElevationTile([lng, lat]: Position): Promise<Elevatio
     }
 }
 
-function getElevationTileReader(lngDegrees: number, latDegrees: number): Reader<ElevationTileData> {
-    return function readElevationTileData(buffer: Buffer): ElevationTileData {
+function getElevationTileReader(
+    lngDegrees: number,
+    latDegrees: number,
+): Reader<ElevationCacheItem> {
+    return function readElevationTileData(buffer: Buffer): ElevationCacheItem {
         const {resolution, size} = getResolutionAndSize(buffer.length);
 
         return {
