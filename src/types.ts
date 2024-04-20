@@ -43,7 +43,7 @@ export const UNSUPPORTED_SIZE = Symbol();
 
 export type CellProvider = 'at-t' | 't-mobile' | 'verizon' | 'all';
 
-export const cellProviders = ['at-t', 't-mobile', 'verizon', 'all'] as const;
+export const cellProviders = ['all', 'verizon', 'at-t', 't-mobile'] as const;
 
 export type CellCoverage = null | 0 | 1 | 2 | 3;
 
