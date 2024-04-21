@@ -8,17 +8,18 @@ import {
     NO_DATA,
     type CellCoverageCacheData,
     type CellCoverageCacheItem,
-    type CellProvider,
     type PixelCoordinate,
+    type TileIndexWorkerResponse,
 } from '../types.js';
 import {urlFetcher} from '../urlFetcher.js';
 import {getCellCoverageTileUrl} from './getCellCoverageTileUrl.js';
 import {isCellCoverageTile} from './isCellCoverageTile.js';
 
-type FlatbushIndex = {
-    provider: CellProvider;
-    data: ArrayBuffer;
-};
+const tileIndexWorker = new Worker(path.join(import.meta.dirname, './flatbushWorker.js'));
+
+tileIndexWorker.on('error', (error) => {
+    console.error('Worker error:', error);
+});
 
 export async function fetchCellCoverageTile(
     pixelCoord: PixelCoordinate,
@@ -50,17 +51,41 @@ function reader(buffer: Buffer): CellCoverageCacheItem {
      * perform brute-force searches until the index is available.
      */
     setImmediate(() => {
-        const worker = new Worker(path.join(import.meta.dirname, './flatbushWorker.js'), {
-            workerData: buffer, // buffer is serialized to `Uint8Array` when sent to worker
-        });
+        const start = process.hrtime.bigint();
 
-        worker.on('message', ({provider, data}: FlatbushIndex) => {
-            indexes[provider] = Flatbush.from(data);
-        });
+        const uuid = crypto.randomUUID();
 
-        worker.on('exit', () => {
-            worker.removeAllListeners(); // cleanup
-        });
+        const onMessage = (message: TileIndexWorkerResponse) => {
+            if (message.uuid !== uuid) return;
+
+            switch (message.type) {
+                case 'index': {
+                    const {provider, data} = message;
+                    indexes[provider] = Flatbush.from(data);
+                    break;
+                }
+                case 'done': {
+                    cleanup();
+                    break;
+                }
+            }
+        };
+
+        const onError = (error: unknown) => {
+            console.error('Worker error:', error);
+        };
+
+        const cleanup = () => {
+            tileIndexWorker.off('message', onMessage);
+            tileIndexWorker.off('error', onError);
+
+            console.log(`Tile index built in ${Number(process.hrtime.bigint() - start) / 1e6}ms`);
+        };
+
+        tileIndexWorker.on('message', onMessage);
+        tileIndexWorker.on('error', onError);
+
+        tileIndexWorker.postMessage({uuid, data: buffer});
     });
 
     return {

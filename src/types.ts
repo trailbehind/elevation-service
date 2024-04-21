@@ -61,3 +61,20 @@ export type GetCoverageFromLayerArgs = {
 };
 
 export type PixelCoordinate = [x: number, y: number, z: number];
+
+export type TileIndexWorkerResponse = {uuid: ReturnType<typeof crypto.randomUUID>} & (
+    | {
+          type: 'index';
+          provider: CellProvider;
+          data: ArrayBuffer;
+      }
+    | {
+          type: 'done';
+      }
+    | {
+          type: 'error';
+          error: unknown;
+      }
+);
+
+export type TileIndexWorkerRequest = {uuid: ReturnType<typeof crypto.randomUUID>; data: Uint8Array};
