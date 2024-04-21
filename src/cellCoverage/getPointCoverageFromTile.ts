@@ -34,25 +34,42 @@ export async function getPointCoverageFromTile(
             const [fracX, fracY] = [pixelX - Math.trunc(pixelX), pixelY - Math.trunc(pixelY)];
             const [tileX, tileY] = [Math.floor(fracX * extent), Math.floor(fracY * extent)];
 
-            /**
-             * @TODO Use {@link https://github.com/mourner/flatbush | R-trees}
-             */
-            for (let i = 0; i < layer.length; i++) {
-                const feature = layer.feature(i);
+            // If we have an R-tree index for this provider, use it to find the feature that
+            // contains the point. Otherwise, iterate over all features in the layer.
+            if (provider in data.indexes) {
+                const index = data.indexes[provider];
+                const featureIndex = index
+                    .search(tileX, tileY, tileX, tileY, (i) => {
+                        const geometry = layer.feature(i).loadGeometry();
+                        return geometry.some((ring) => {
+                            const polygon = ring.map((point) => [point.x, point.y]);
+                            return pointInPolygon([tileX, tileY], polygon);
+                        });
+                    })
+                    .at(0);
 
-                const geometry = feature.loadGeometry();
+                if (featureIndex === undefined) {
+                    resolve(null);
+                } else {
+                    const {tech} = layer.feature(featureIndex).properties;
+                    resolve(isCellCoverage(tech) ? tech : null);
+                }
+            } else {
+                for (let i = 0; i < layer.length; i++) {
+                    const feature = layer.feature(i);
 
-                for (const ring of geometry) {
-                    const polygon = ring.map((point) => [point.x, point.y]);
+                    for (const ring of feature.loadGeometry()) {
+                        const polygon = ring.map((point) => [point.x, point.y]);
 
-                    if (pointInPolygon([tileX, tileY], polygon)) {
-                        const {tech} = feature.properties;
-                        return resolve(isCellCoverage(tech) ? tech : null);
+                        if (pointInPolygon([tileX, tileY], polygon)) {
+                            const {tech} = feature.properties;
+                            return resolve(isCellCoverage(tech) ? tech : null);
+                        }
                     }
                 }
-            }
 
-            resolve(null);
+                resolve(null);
+            }
         });
     });
 }

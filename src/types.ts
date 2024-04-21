@@ -45,6 +45,10 @@ export type CellProvider = 'at-t' | 't-mobile' | 'verizon' | 'all';
 
 export const cellProviders = ['all', 'verizon', 'at-t', 't-mobile'] as const;
 
+export function isCellProvider(provider: unknown): provider is CellProvider {
+    return typeof provider === 'string' && cellProviders.includes(provider as CellProvider);
+}
+
 export type CellCoverage = null | 0 | 1 | 2 | 3;
 
 export function isCellCoverage(value: unknown): value is CellCoverage {

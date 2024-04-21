@@ -25,7 +25,7 @@ function buildTileIndexes(uuid: ReturnType<typeof crypto.randomUUID>, data: Uint
             if (layer === undefined) throw new Error(`Missing layer for ${provider}`);
             if (layer.length === 0) throw new Error(`Empty layer for ${provider}`);
 
-            const index = new Flatbush(layer.length, 16, Int16Array);
+            const index = new Flatbush(layer.length, 1, Int16Array);
 
             for (let i = 0; i < layer.length; i++) {
                 const feature = layer.feature(i);

@@ -15,7 +15,7 @@ import {urlFetcher} from '../urlFetcher.js';
 import {getCellCoverageTileUrl} from './getCellCoverageTileUrl.js';
 import {isCellCoverageTile} from './isCellCoverageTile.js';
 
-const tileIndexWorker = new Worker(path.join(import.meta.dirname, './flatbushWorker.js'));
+const tileIndexWorker = new Worker(path.join(import.meta.dirname, './tileIndexWorker.js'));
 
 tileIndexWorker.on('error', (error) => {
     console.error('Worker error:', error);

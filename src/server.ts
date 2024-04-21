@@ -1,10 +1,11 @@
 import 'dotenv/config';
 
 import cors from '@fastify/cors';
-import Fastify from 'fastify';
+import Fastify, {type FastifyRequest} from 'fastify';
 import type {Feature, FeatureCollection, Geometry, Position} from 'geojson';
 import {addElevation} from './elevation/addElevation.js';
 import {getCellCoverage} from './cellCoverage/getCellCoverage.js';
+import {isCellProvider} from './types.js';
 
 const port = parseInt(process.env.PORT!);
 const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
@@ -53,20 +54,37 @@ fastify.post('/geojson', async (request, reply) => {
 
 fastify.get('/status', async (_request, reply) => reply.send({success: true}));
 
-fastify.post('/cell', async (request, reply) => {
-    const coords = request.body;
-    if (!isCoordinates(coords)) {
-        return reply.code(400).send({Error: 'invalid coordinates'});
-    }
+const cellSchema = {
+    params: {
+        type: 'object',
+        properties: {provider: {type: 'string'}},
+        required: ['provider'],
+    },
+};
 
-    try {
-        const coverage = await getCellCoverage(coords);
-        await reply.send(coverage);
-    } catch (error) {
-        fastify.log.error(error);
-        await reply.code(500).send({Error: 'Cell coverage unavailable'});
-    }
-});
+fastify.post(
+    '/cell/:provider',
+    {schema: cellSchema},
+    async (request: FastifyRequest<{Params: {provider: string}}>, reply) => {
+        const {provider} = request.params;
+
+        if (!isCellProvider(provider)) return reply.code(400).send({Error: 'invalid provider'});
+
+        const coords = request.body;
+
+        if (!isCoordinates(coords)) {
+            return reply.code(400).send({Error: 'invalid coordinates'});
+        }
+
+        try {
+            const coverage = await getCellCoverage(coords, provider);
+            await reply.send(coverage);
+        } catch (error) {
+            fastify.log.error(error);
+            await reply.code(500).send({Error: 'Cell coverage unavailable'});
+        }
+    },
+);
 
 try {
     await fastify.listen({port, host: '0.0.0.0'});
