@@ -1,6 +1,6 @@
 {
     "name": "elevation-service",
-    "packageManager": "pnpm@8.15.6",
+    "packageManager": "pnpm@9.1.0",
     "type": "module",
     "private": true,
     "version": "3.0.0",
@@ -13,26 +13,30 @@
         "test": "node --test --test-concurrency=1"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "^3.550.0",
+        "@aws-sdk/client-s3": "^3.577.0",
+        "@fastify/compress": "^7.0.3",
         "@fastify/cors": "^9.0.1",
         "@sindresorhus/fnv1a": "^3.1.0",
         "@turf/meta": "^6.5.0",
         "dotenv": "^16.4.5",
-        "fastify": "^4.26.2",
-        "geojson": "^0.5.0",
-        "lru-cache": "^10.2.0"
+        "fastify": "^4.27.0",
+        "geobuf": "^3.0.2",
+        "lru-cache": "^10.2.2",
+        "pbf": "^3.2.1"
     },
     "devDependencies": {
-        "@eslint/js": "^9.0.0",
+        "@eslint/js": "^9.2.0",
+        "@types/geobuf": "^3.0.4",
         "@types/geojson": "^7946.0.14",
-        "@types/node": "^20.12.5",
+        "@types/node": "^20.12.12",
+        "@types/pbf": "^3.0.5",
         "concurrently": "^8.2.2",
-        "eslint": "^9.0.0",
+        "eslint": "^9.2.0",
         "geojson": "^0.5.0",
-        "globals": "^15.0.0",
+        "globals": "^15.2.0",
         "nodemon": "^3.1.0",
         "prettier": "^3.2.5",
-        "typescript": "^5.4.4",
-        "typescript-eslint": "^7.6.0"
+        "typescript": "^5.4.5",
+        "typescript-eslint": "^7.9.0"
     }
 }

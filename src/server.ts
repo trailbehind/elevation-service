@@ -4,6 +4,10 @@ import cors from '@fastify/cors';
 import Fastify from 'fastify';
 import type {Feature, FeatureCollection, Geometry} from 'geojson';
 import {addElevation} from './elevation/addElevation.js';
+import compress from '@fastify/compress';
+import geobuf from 'geobuf';
+import Pbf from 'pbf';
+import type {GeoJSON} from 'geojson';
 
 const port = parseInt(process.env.PORT!);
 const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
@@ -23,30 +27,65 @@ export const fastify = Fastify({
 // Add header for connection timeout to all responses
 fastify.server.headersTimeout = connectionTimeout;
 
+/**
+ * {@link https://fastify.dev/docs/latest/Reference/ContentTypeParser/#custom-parser-options | Fastify docs}
+ * claim that `parseAs: 'buffer'` is the default, but it is not; this throws errors if not explicit.
+ * The type signature for the `async` form of the handler is also incorrect or incomplete.
+ */
+fastify.addContentTypeParser(
+    'application/x-protobuf',
+    {parseAs: 'buffer'},
+    // @ts-expect-error type signature is incorrect or incomplete
+    async (_request, body) => {
+        return geobuf.decode(new Pbf(body as Buffer));
+    },
+);
+
 await fastify.register(cors, {
     origin: true,
     methods: ['GET', 'OPTIONS'],
-    allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
+    allowedHeaders: ['Origin', 'Content-Type', 'Content-Encoding', 'Accept'],
     maxAge: 300,
 });
 
+/**
+ * {@link https://github.com/fastify/fastify-compress?tab=readme-ov-file#customtypes | customTypes}
+ * _replaces_ the default types, so we must enumerate everything we want to support.
+ */
+await fastify.register(compress, {customTypes: /^application\/(x-protobuf|json)$/});
+
 fastify.addHook('onTimeout', async (_request, reply) => {
-    await reply.code(500).send({Error: 'Request timed out'});
+    reply.code(500);
+    return {Error: 'Request timed out'};
+});
+
+fastify.post('/geobuf', async (request, reply) => {
+    try {
+        const geoJson = request.body as GeoJSON;
+        await addElevation(geoJson);
+        reply.type('application/x-protobuf');
+        return geobuf.encode(geoJson, new Pbf());
+    } catch (error) {
+        fastify.log.error(error);
+        reply.code(500);
+        return {Error: 'Elevation unavailable'};
+    }
 });
 
 fastify.post('/geojson', async (request, reply) => {
     const geoJson = request.body;
 
     if (!isGeoJson(geoJson)) {
-        return reply.code(400).send({Error: 'invalid geojson'});
+        reply.code(400);
+        return {Error: 'invalid geojson'};
     }
 
     try {
         await addElevation(geoJson);
-        await reply.send(geoJson);
+        return geoJson;
     } catch (error) {
-        fastify.log.error(error);
-        await reply.code(500).send({Error: 'Elevation unavailable'});
+        reply.code(500);
+        return {Error: 'Elevation unavailable'};
     }
 });
 
