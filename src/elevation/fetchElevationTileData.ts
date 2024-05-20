@@ -1,7 +1,7 @@
 // Adapted from https://github.com/perliedman/node-hgt/blob/master/src/hgt.js
 
 import path from 'node:path';
-import {type Position} from 'geojson';
+import type {Position} from 'geojson';
 import {TILE_MISSING, fetchTileData} from '../fetchTileData.js';
 import {getElevationTileKey} from './getElevationTileKey.js';
 import {getResolutionAndSize} from './getResolutionAndSize.js';
