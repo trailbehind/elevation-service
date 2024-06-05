@@ -5,7 +5,7 @@
     "private": true,
     "version": "3.0.0",
     "scripts": {
-        "start": "node dist/server.js",
+        "start": "node --require dd-trace/init dist/server.js",
         "dev": "pnpm build; concurrently \"pnpm:dev:*\"",
         "dev:watch": "tsc --watch",
         "dev:start": "nodemon --watch 'dist' --exec 'pnpm start'",

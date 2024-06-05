@@ -1,6 +1,4 @@
 import 'dotenv/config';
-
-import 'dd-trace/init';
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
