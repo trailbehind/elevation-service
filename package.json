@@ -18,6 +18,7 @@
         "@fastify/cors": "^9.0.1",
         "@sindresorhus/fnv1a": "^3.1.0",
         "@turf/meta": "^6.5.0",
+        "dd-trace": "^5.14.1",
         "dotenv": "^16.4.5",
         "fastify": "^4.27.0",
         "geobuf": "^3.0.2",
