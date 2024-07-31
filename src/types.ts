@@ -43,23 +43,3 @@ export function isGeoJson(geojson: unknown): geojson is FeatureCollection | Feat
             return false;
     }
 }
-
-export function isPolylineEncoded(
-    geoJson: unknown,
-): geoJson is PolylinePoint | PolylineLineString | PolylineMultiLineString {
-    if (typeof geoJson !== 'object' || geoJson === null) return false;
-
-    if (!('type' in geoJson)) return false;
-    if (!('coordinates' in geoJson)) return false;
-
-    if (Array.isArray(geoJson.coordinates)) {
-        return (
-            geoJson.coordinates.every((line) => typeof line === 'string') &&
-            geoJson.type === 'MultiLineString'
-        );
-    } else if (typeof geoJson.coordinates === 'string') {
-        return geoJson.type === 'Point' || geoJson.type === 'LineString';
-    } else {
-        return false;
-    }
-}
