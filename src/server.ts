@@ -5,11 +5,11 @@ import cors from '@fastify/cors';
 import polyline from '@mapbox/polyline';
 import Fastify from 'fastify';
 import geobuf from 'geobuf';
-import type {GeoJSON, LineString, MultiLineString, Point} from 'geojson';
+import type {GeoJSON} from 'geojson';
 import Pbf from 'pbf';
 import {addElevation} from './elevation/addElevation.js';
 import {getTerrariumDemElevation} from './elevation/getTerrariumDemElevation.js';
-import {isGeoJson, isPolylineEncoded} from './types.js';
+import {isGeoJson} from './types.js';
 
 const port = parseInt(process.env.PORT!);
 const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
@@ -80,31 +80,9 @@ fastify.post('/geobuf', async (request, reply) => {
 
 fastify.post('/polyline', async (request, reply) => {
     try {
-        const polylineGeoJson = request.body;
-
-        if (!isPolylineEncoded(polylineGeoJson)) throw badRequest;
-
-        let geoJson: Point | LineString | MultiLineString;
-
-        if (polylineGeoJson.type === 'Point') {
-            geoJson = {
-                type: 'Point',
-                coordinates: polyline.toGeoJSON(polylineGeoJson.coordinates).coordinates[0],
-            };
-        } else if (polylineGeoJson.type === 'LineString') {
-            geoJson = polyline.toGeoJSON(polylineGeoJson.coordinates);
-        } else {
-            geoJson = {
-                type: 'MultiLineString',
-                coordinates: polylineGeoJson.coordinates.map(
-                    (line) => polyline.toGeoJSON(line).coordinates,
-                ),
-            };
-        }
-
+        if (typeof request.body !== 'string') throw badRequest;
         reply.type('application/x-terrarium-dem');
-
-        return getTerrariumDemElevation(geoJson);
+        return getTerrariumDemElevation(polyline.toGeoJSON(request.body));
     } catch (err) {
         if (err === badRequest) {
             reply.code(400);
