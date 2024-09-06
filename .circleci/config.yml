@@ -19,7 +19,7 @@ jobs:
                       - pnpm-{{ checksum "pnpm-lock.yaml" }}
             - run:
                   name: Run tests
-                  command: pnpm test
+                  command: pnpm test:ci
             - save_cache:
                   name: Save pnpm store
                   key: pnpm-{{ checksum "pnpm-lock.yaml" }}

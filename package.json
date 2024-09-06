@@ -10,8 +10,8 @@
         "dev:watch": "tsc --watch",
         "dev:start": "nodemon --watch 'dist' --exec 'NODE_ENV=development pnpm start'",
         "build": "tsc",
-        "pretest": "pnpm install && pnpm build",
-        "test": "NODE_ENV=test node --test --test-concurrency=1"
+        "test": "NODE_ENV=test node --test --test-concurrency=1",
+        "test:ci": "pnpm install && pnpm build && pnpm test"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.588.0",
