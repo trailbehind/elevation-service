@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './env.js';
 
 import compress from '@fastify/compress';
 import cors from '@fastify/cors';

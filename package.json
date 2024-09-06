@@ -8,9 +8,10 @@
         "start": "node --require dd-trace/init dist/server.js",
         "dev": "pnpm build; concurrently \"pnpm:dev:*\"",
         "dev:watch": "tsc --watch",
-        "dev:start": "nodemon --watch 'dist' --exec 'pnpm start'",
+        "dev:start": "nodemon --watch 'dist' --exec 'NODE_ENV=development pnpm start'",
         "build": "tsc",
-        "test": "node --test --test-concurrency=1"
+        "pretest": "pnpm build",
+        "test": "NODE_ENV=test node --test --test-concurrency=1"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.588.0",
