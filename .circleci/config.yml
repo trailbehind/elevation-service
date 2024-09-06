@@ -42,11 +42,11 @@ workflows:
     elevation:
         jobs:
             - test:
-                  name: Unit tests
+                  name: Tests
             - ecr:
                   name: ECR
                   requires:
-                      - Unit tests
+                      - Tests
 #                  filters:
 #                      branches:
 #                          only:
