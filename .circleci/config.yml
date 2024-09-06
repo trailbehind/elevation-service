@@ -19,13 +19,7 @@ jobs:
                       - pnpm-{{ checksum "pnpm-lock.yaml" }}
             - run:
                   name: Run tests
-                  command: |
-                      env PORT=5001 \
-                      MAX_POST_SIZE=500000 \
-                      MAX_LRU_SIZE=500000000 \
-                      AWS_ELEVATION_BUCKET=com.gaiagps.dem \
-                      TILE_DIRECTORY=elevation-server-data \
-                      pnpm test
+                  command: pnpm test
             - save_cache:
                   name: Save pnpm store
                   key: pnpm-{{ checksum "pnpm-lock.yaml" }}
