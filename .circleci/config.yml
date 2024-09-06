@@ -62,3 +62,8 @@ workflows:
                   name: ECR
                   requires:
                       - Unit tests
+#                  filters:
+#                      branches:
+#                          only:
+#                              - master
+#                      tags:
