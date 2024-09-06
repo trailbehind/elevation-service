@@ -45,21 +45,12 @@ jobs:
         docker:
             - image: cimg/base:current
         steps:
-            - checkout
-            - setup_remote_docker
-            - run:
-                  name: Build Details.
-                  command: |
-                      echo "Building Docker image using aws-ecr Orb commands."
-                      docker --version
-
-            - aws-ecr/ecr_login:
-                  region: us-east-1
-
-            - aws-ecr/build_image:
-                  region: us-east-1
+            - setup_remote_docker:
+                  docker_layer_caching: true
+            - aws-ecr/build_and_push_image:
+                  auth:
+                      - aws-cli/setup
                   repo: gaiagps/elevation-service
-                  dockerfile: Dockerfile
                   tag: ${CIRCLE_SHA1}
 
 workflows:
