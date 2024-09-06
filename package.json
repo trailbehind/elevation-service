@@ -10,7 +10,7 @@
         "dev:watch": "tsc --watch",
         "dev:start": "nodemon --watch 'dist' --exec 'NODE_ENV=development pnpm start'",
         "build": "tsc",
-        "pretest": "pnpm build",
+        "pretest": "pnpm install && pnpm build",
         "test": "NODE_ENV=test node --test --test-concurrency=1"
     },
     "dependencies": {

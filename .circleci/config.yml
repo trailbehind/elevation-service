@@ -21,17 +21,6 @@ jobs:
                   keys:
                       - pnpm-{{ checksum "pnpm-lock.yaml" }}
             - run:
-                  name: Install dependencies
-                  command: pnpm install
-            - save_cache:
-                  name: Save pnpm store
-                  key: pnpm-{{ checksum "pnpm-lock.yaml" }}
-                  paths:
-                      - .pnpm-store
-            - run:
-                  name: Build app
-                  command: pnpm build
-            - run:
                   name: Run tests
                   command: |
                       env PORT=5001 \
@@ -40,6 +29,11 @@ jobs:
                       AWS_ELEVATION_BUCKET=com.gaiagps.dem \
                       TILE_DIRECTORY=elevation-server-data \
                       pnpm test
+            - save_cache:
+                  name: Save pnpm store
+                  key: pnpm-{{ checksum "pnpm-lock.yaml" }}
+                  paths:
+                      - .pnpm-store
 
     ecr:
         docker:
