@@ -1,33 +1,54 @@
 version: 2.1
 orbs:
-  aws-cli: circleci/aws-cli@4.0
-  aws-ecr: circleci/aws-ecr@9.0
-
+    aws-cli: circleci/aws-cli@5.1.0
+    aws-ecr: circleci/aws-ecr@9.3.2
 
 jobs:
-  build_and_push:
-    docker:
-      - image: cimg/base:current
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Details.
-          command: |
-            echo "Building Docker image using aws-ecr Orb commands."
-            docker --version
+    test:
+        docker:
+            - image: cimg/node:lts
+        steps:
+            - checkout
+            - aws-cli/setup
+            - run:
+                  name: Setup pnpm
+                  command: sudo corepack enable && pnpm config set store-dir .pnpm-store
+            - restore_cache:
+                  name: Restore pnpm store
+                  keys:
+                      - pnpm-{{ checksum "pnpm-lock.yaml" }}
+            - run:
+                  name: Run tests
+                  command: pnpm test:ci
+            - save_cache:
+                  name: Save pnpm store
+                  key: pnpm-{{ checksum "pnpm-lock.yaml" }}
+                  paths:
+                      - .pnpm-store
 
-      - aws-ecr/ecr_login:
-          region: us-east-1
-
-      - aws-ecr/build_image:
-          region: us-east-1
-          repo: gaiagps/elevation-service
-          dockerfile: Dockerfile
-          tag: ${CIRCLE_SHA1}
-
+    ecr:
+        docker:
+            - image: cimg/base:current
+        steps:
+            - setup_remote_docker:
+                  docker_layer_caching: true
+            - aws-ecr/build_and_push_image:
+                  auth:
+                      - aws-cli/setup
+                  repo: gaiagps/elevation-service
+                  tag: ${CIRCLE_SHA1}
 
 workflows:
-  staging:
-    jobs:
-      - build_and_push
+    elevation:
+        jobs:
+            - test:
+                  name: Tests
+            - ecr:
+                  name: ECR
+                  requires:
+                      - Tests
+#                  filters:
+#                      branches:
+#                          only:
+#                              - master
+#                      tags:

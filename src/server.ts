@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './env.js';
 
 import compress from '@fastify/compress';
 import cors from '@fastify/cors';
@@ -20,25 +20,24 @@ const unavailable = {Error: 'Elevation unavailable'};
 const badRequest = {Error: 'Invalid request'};
 const timeout = {Error: 'Request timed out'};
 
-export const fastify = Fastify({
+export const server = Fastify({
     logger: true,
     ignoreTrailingSlash: true,
     disableRequestLogging: true,
-    // 500kb
     bodyLimit,
     connectionTimeout,
     keepAliveTimeout,
 });
 
 // Add header for connection timeout to all responses
-fastify.server.headersTimeout = connectionTimeout;
+server.server.headersTimeout = connectionTimeout;
 
 /**
  * {@link https://fastify.dev/docs/latest/Reference/ContentTypeParser/#custom-parser-options | Fastify docs}
  * claim that `parseAs: 'buffer'` is the default, but it is not; this throws errors if not explicit.
  * The type signature for the `async` form of the handler is also incorrect or incomplete.
  */
-fastify.addContentTypeParser(
+server.addContentTypeParser(
     'application/x-protobuf',
     {parseAs: 'buffer'},
     // @ts-expect-error type signature is incorrect or incomplete
@@ -47,7 +46,7 @@ fastify.addContentTypeParser(
     },
 );
 
-await fastify.register(cors, {
+await server.register(cors, {
     origin: true,
     methods: ['GET', 'OPTIONS'],
     allowedHeaders: ['Origin', 'Content-Type', 'Content-Encoding', 'Accept'],
@@ -58,27 +57,27 @@ await fastify.register(cors, {
  * {@link https://github.com/fastify/fastify-compress?tab=readme-ov-file#customtypes | customTypes}
  * _replaces_ the default types, so we must enumerate everything we want to support.
  */
-await fastify.register(compress, {customTypes: /^application\/(x-protobuf|x-terrarium-dem|json)$/});
+await server.register(compress, {customTypes: /^application\/(x-protobuf|x-terrarium-dem|json)$/});
 
-fastify.addHook('onTimeout', async (_request, reply) => {
+server.addHook('onTimeout', async (_request, reply) => {
     reply.code(500);
     return timeout;
 });
 
-fastify.post('/geobuf', async (request, reply) => {
+server.post('/geobuf', async (request, reply) => {
     try {
         const geoJson = request.body as GeoJSON;
         await addElevation(geoJson);
         reply.type('application/x-protobuf');
         return geobuf.encode(geoJson, new Pbf());
     } catch (error) {
-        fastify.log.error(error);
+        server.log.error(error);
         reply.code(500);
         return unavailable;
     }
 });
 
-fastify.post('/polyline', async (request, reply) => {
+server.post('/polyline', async (request, reply) => {
     try {
         if (typeof request.body !== 'string') throw badRequest;
         reply.type('application/x-terrarium-dem');
@@ -88,14 +87,14 @@ fastify.post('/polyline', async (request, reply) => {
             reply.code(400);
             return badRequest;
         } else {
-            fastify.log.error(err);
+            server.log.error(err);
             reply.code(500);
             return unavailable;
         }
     }
 });
 
-fastify.post('/geojson', async (request, reply) => {
+server.post('/geojson', async (request, reply) => {
     try {
         const geoJson = structuredClone(request.body);
         if (!isGeoJson(geoJson)) throw badRequest;
@@ -106,18 +105,18 @@ fastify.post('/geojson', async (request, reply) => {
             reply.code(400);
             return badRequest;
         } else {
-            fastify.log.error(error);
+            server.log.error(error);
             reply.code(500);
             return unavailable;
         }
     }
 });
 
-fastify.get('/status', async (_request, reply) => reply.send({success: true}));
+server.get('/status', async (_request, reply) => reply.send({success: true}));
 
 try {
-    await fastify.listen({port, host: '0.0.0.0'});
+    await server.listen({port, host: '0.0.0.0'});
 } catch (error) {
-    fastify.log.error(error);
+    server.log.error(error);
     process.exit(1);
 }

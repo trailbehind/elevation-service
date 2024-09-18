@@ -2,7 +2,7 @@
 
 import fnv1a from '@sindresorhus/fnv1a';
 import {LRUCache} from 'lru-cache';
-import {fastify} from './server.js';
+import {server} from './server.js';
 
 // Generic type for a function that somehow fetches a tile and produces a `Buffer`, e.g.,
 // `s3Fetcher` fetches a tile from an S3 bucket.
@@ -39,7 +39,7 @@ export const interval = setInterval(
         const evictionRate = accesses > 0 ? evictions / accesses : 0;
         const fillPercentage = cache.calculatedSize / cache.maxSize;
 
-        fastify.log.info({lruCacheStats: {fillPercentage, hitRate, evictionRate}});
+        server.log.info({lruCacheStats: {fillPercentage, hitRate, evictionRate}});
 
         // Reset stats each interval. Maybe @TODO: total stats?
         hits = misses = evictions = 0;
