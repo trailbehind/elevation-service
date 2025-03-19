@@ -4,12 +4,10 @@ import compress from '@fastify/compress';
 import cors from '@fastify/cors';
 import polyline from '@mapbox/polyline';
 import Fastify from 'fastify';
-import geobuf from 'geobuf';
-import type {GeoJSON} from 'geojson';
-import Pbf from 'pbf';
 import {addElevation} from './elevation/addElevation.js';
 import {getTerrariumDemElevation} from './elevation/getTerrariumDemElevation.js';
 import {isGeoJson} from './types.js';
+import {log} from './logRequest.js';
 
 const port = parseInt(process.env.PORT!);
 const connectionTimeout = parseInt(process.env.CONNECTION_TIMEOUT!);
@@ -33,20 +31,6 @@ export const fastify = Fastify({
 // Add header for connection timeout to all responses
 fastify.server.headersTimeout = connectionTimeout;
 
-/**
- * {@link https://fastify.dev/docs/latest/Reference/ContentTypeParser/#custom-parser-options | Fastify docs}
- * claim that `parseAs: 'buffer'` is the default, but it is not; this throws errors if not explicit.
- * The type signature for the `async` form of the handler is also incorrect or incomplete.
- */
-fastify.addContentTypeParser(
-    'application/x-protobuf',
-    {parseAs: 'buffer'},
-    // @ts-expect-error type signature is incorrect or incomplete
-    async (_request, body) => {
-        return geobuf.decode(new Pbf(body as Buffer));
-    },
-);
-
 await fastify.register(cors, {
     origin: true,
     methods: ['GET', 'OPTIONS'],
@@ -58,59 +42,56 @@ await fastify.register(cors, {
  * {@link https://github.com/fastify/fastify-compress?tab=readme-ov-file#customtypes | customTypes}
  * _replaces_ the default types, so we must enumerate everything we want to support.
  */
-await fastify.register(compress, {customTypes: /^application\/(x-protobuf|x-terrarium-dem|json)$/});
+await fastify.register(compress, {customTypes: /^application\/(x-terrarium-dem|json)$/});
 
 fastify.addHook('onTimeout', async (_request, reply) => {
     reply.code(500);
     return timeout;
 });
 
-fastify.post('/geobuf', async (request, reply) => {
-    try {
-        const geoJson = request.body as GeoJSON;
-        await addElevation(geoJson);
-        reply.type('application/x-protobuf');
-        return geobuf.encode(geoJson, new Pbf());
-    } catch (error) {
-        fastify.log.error(error);
-        reply.code(500);
-        return unavailable;
-    }
+fastify.post('/polyline', {
+    preHandler: async (request) => {
+        if (typeof request.body === 'string') log({type: 'polyline', body: request.body});
+    },
+    handler: async (request, reply) => {
+        try {
+            if (typeof request.body !== 'string') throw badRequest;
+            reply.type('application/x-terrarium-dem');
+            return getTerrariumDemElevation(polyline.toGeoJSON(request.body));
+        } catch (err) {
+            if (err === badRequest) {
+                reply.code(400);
+                return badRequest;
+            } else {
+                fastify.log.error(err);
+                reply.code(500);
+                return unavailable;
+            }
+        }
+    },
 });
 
-fastify.post('/polyline', async (request, reply) => {
-    try {
-        if (typeof request.body !== 'string') throw badRequest;
-        reply.type('application/x-terrarium-dem');
-        return getTerrariumDemElevation(polyline.toGeoJSON(request.body));
-    } catch (err) {
-        if (err === badRequest) {
-            reply.code(400);
-            return badRequest;
-        } else {
-            fastify.log.error(err);
-            reply.code(500);
-            return unavailable;
+fastify.post('/geojson', {
+    preHandler: async (request) => {
+        if (typeof request.body === 'string') log({type: 'geojson', body: request.body});
+    },
+    handler: async (request, reply) => {
+        try {
+            const geoJson = structuredClone(request.body);
+            if (!isGeoJson(geoJson)) throw badRequest;
+            await addElevation(geoJson);
+            return geoJson;
+        } catch (error) {
+            if (error === badRequest) {
+                reply.code(400);
+                return badRequest;
+            } else {
+                fastify.log.error(error);
+                reply.code(500);
+                return unavailable;
+            }
         }
-    }
-});
-
-fastify.post('/geojson', async (request, reply) => {
-    try {
-        const geoJson = structuredClone(request.body);
-        if (!isGeoJson(geoJson)) throw badRequest;
-        await addElevation(geoJson);
-        return geoJson;
-    } catch (error) {
-        if (error === badRequest) {
-            reply.code(400);
-            return badRequest;
-        } else {
-            fastify.log.error(error);
-            reply.code(500);
-            return unavailable;
-        }
-    }
+    },
 });
 
 fastify.get('/status', async (_request, reply) => reply.send({success: true}));

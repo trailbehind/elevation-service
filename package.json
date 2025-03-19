@@ -22,9 +22,7 @@
         "dd-trace": "^5.14.1",
         "dotenv": "^16.4.5",
         "fastify": "^4.27.0",
-        "geobuf": "^3.0.2",
-        "lru-cache": "^10.2.2",
-        "pbf": "^3.2.1"
+        "lru-cache": "^10.2.2"
     },
     "devDependencies": {
         "@eslint/js": "^9.4.0",
