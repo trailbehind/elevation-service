@@ -50,9 +50,9 @@ fastify.addHook('onTimeout', async (_request, reply) => {
 });
 
 fastify.post('/polyline', {
-    preHandler: async (request) => {
-        if (typeof request.body === 'string') log({type: 'polyline', body: request.body});
-    },
+//    preHandler: async (request) => {
+//        if (typeof request.body === 'string') log({type: 'polyline', body: request.body});
+//    },
     handler: async (request, reply) => {
         try {
             if (typeof request.body !== 'string') throw badRequest;
@@ -72,9 +72,9 @@ fastify.post('/polyline', {
 });
 
 fastify.post('/geojson', {
-    preHandler: async (request) => {
-        if (typeof request.body === 'string') log({type: 'geojson', body: request.body});
-    },
+//    preHandler: async (request) => {
+//        if (typeof request.body === 'string') log({type: 'geojson', body: request.body});
+//    },
     handler: async (request, reply) => {
         try {
             const geoJson = structuredClone(request.body);
