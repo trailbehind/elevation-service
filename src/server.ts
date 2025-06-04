@@ -73,7 +73,7 @@ fastify.post('/polyline', {
 
 fastify.post('/geojson', {
     preHandler: async (request) => {
-        if (typeof request.body === 'object') log({type: 'geojson', body: request.body});
+        if (typeof request.body === 'object' && isGeoJson(request.body)) log({type: 'geojson', body: request.body});
     },
     handler: async (request, reply) => {
         try {
