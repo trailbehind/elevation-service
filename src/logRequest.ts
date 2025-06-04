@@ -3,7 +3,7 @@ import {fastify} from './server.js';
 
 const LOG_SIZE_THRESHOLD = 5_000_000; // 5 megabytes of `request.body`s
 
-type Request = {type: 'polyline' | 'geojson'; body: string};
+type Request = {type: 'polyline' | 'geojson'; body: string | object};
 
 let requests: Request[] = [];
 let len = 0;
@@ -13,7 +13,8 @@ const Bucket = 'com.gaiagps.dem';
 const prefix = 'logs/';
 
 export function log(request: Request): void {
-    len += request.body.length;
+    const logStr = typeof request.body == "string" ? request.body : JSON.stringify(request.body);
+    len += logStr.length;
     requests.push(request);
 
     if (len >= LOG_SIZE_THRESHOLD) {

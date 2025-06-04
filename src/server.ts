@@ -72,9 +72,9 @@ fastify.post('/polyline', {
 });
 
 fastify.post('/geojson', {
-//    preHandler: async (request) => {
-//        if (typeof request.body === 'string') log({type: 'geojson', body: request.body});
-//    },
+    preHandler: async (request) => {
+        if (typeof request.body === 'object' && isGeoJson(request.body)) log({type: 'geojson', body: request.body});
+    },
     handler: async (request, reply) => {
         try {
             const geoJson = structuredClone(request.body);
